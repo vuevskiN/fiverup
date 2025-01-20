@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "487306851360",
+    "project_id": "fiverup-a589b",
+    "storage_bucket": "fiverup-a589b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:487306851360:android:1377e55df1242db2b07845",
+        "android_client_info": {
+          "package_name": "com.example.fiverup"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDf-2d_AEjeANpjrUJOWDGRsAGgRoPJs-k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
