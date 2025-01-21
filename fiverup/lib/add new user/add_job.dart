@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/job.dart';
 import '../service/job_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AddJobScreen extends StatefulWidget {
+  final Job? jobToEdit; // Pass the job to edit, if any
+  final String? jobId; // Pass the job ID to edit, if any
+
+  AddJobScreen({this.jobToEdit, this.jobId});
+
   @override
   _AddJobScreenState createState() => _AddJobScreenState();
 }
@@ -16,6 +22,18 @@ class _AddJobScreenState extends State<AddJobScreen> {
   final JobService jobService = JobService();
 
   @override
+  void initState() {
+    super.initState();
+
+    // Pre-fill fields if editing a job
+    if (widget.jobToEdit != null) {
+      _titleController.text = widget.jobToEdit!.title;
+      _descriptionController.text = widget.jobToEdit!.description;
+      _hourlyRateController.text = widget.jobToEdit!.hourlyRate.toString();
+    }
+  }
+
+  @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
@@ -23,52 +41,93 @@ class _AddJobScreenState extends State<AddJobScreen> {
     super.dispose();
   }
 
-  void _addJob() {
+  Future<void> _addOrUpdateJob() async {
     if (_formKey.currentState!.validate()) {
-      final job = Job(
-        title: _titleController.text,
-        description: _descriptionController.text,
-        hourlyRate: double.parse(_hourlyRateController.text),
-      );
-      jobService.addJob(job).then((_) {
-        Navigator.pop(context);
-      });
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User not logged in')),
+        );
+        return;
+      }
+
+      try {
+        // Assign a job ID for new jobs
+        final jobId = widget.jobId ?? jobService.jobsCollection.doc().id;
+
+        final job = Job(
+          jobId: jobId,
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim(),
+          hourlyRate: double.parse(_hourlyRateController.text.trim()),
+          createdBy: widget.jobToEdit?.createdBy ?? user.email,
+        );
+
+        if (widget.jobToEdit != null) {
+          // Update the existing job
+          await jobService.updateJob(jobId, job);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Job updated successfully!')),
+          );
+        } else {
+          // Add a new job
+          await jobService.addJob(job);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Job added successfully!')),
+          );
+        }
+
+        Navigator.pop(context); // Navigate back to the previous screen
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save job: $error')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add Job')),
+      appBar: AppBar(
+        title: Text(widget.jobToEdit != null ? 'Edit Job' : 'Add Job'),
+      ),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextFormField(
                 controller: _titleController,
-                decoration: InputDecoration(labelText: 'Job Title'),
-                validator: (value) => value!.isEmpty ? 'Enter a title' : null,
+                decoration: const InputDecoration(labelText: 'Job Title'),
+                validator: (value) =>
+                value == null || value.trim().isEmpty ? 'Enter a job title' : null,
               ),
               TextFormField(
                 controller: _descriptionController,
-                decoration: InputDecoration(labelText: 'Job Description'),
-                validator: (value) => value!.isEmpty ? 'Enter a description' : null,
+                decoration: const InputDecoration(labelText: 'Job Description'),
+                validator: (value) =>
+                value == null || value.trim().isEmpty ? 'Enter a job description' : null,
               ),
               TextFormField(
                 controller: _hourlyRateController,
-                decoration: InputDecoration(labelText: 'Hourly Rate'),
+                decoration: const InputDecoration(labelText: 'Hourly Rate'),
                 keyboardType: TextInputType.number,
-                validator: (value) =>
-                value!.isEmpty || double.tryParse(value) == null
-                    ? 'Enter a valid rate'
-                    : null,
+                validator: (value) {
+                  final rate = double.tryParse(value ?? '');
+                  if (rate == null || rate <= 0) {
+                    return 'Enter a valid hourly rate';
+                  }
+                  return null;
+                },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _addJob,
-                child: Text('Add Job'),
+                onPressed: _addOrUpdateJob,
+                child: Text(widget.jobToEdit != null ? 'Update Job' : 'Add Job'),
               ),
             ],
           ),

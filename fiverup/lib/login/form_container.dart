@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fiverup/main/main_page.dart';
 import 'package:flutter/material.dart';
+
+import '../new_profile/profile_creation.dart';
+import '../profile/profile_screen.dart';
 
 
 class FormContainerPage extends StatelessWidget {
@@ -21,34 +25,71 @@ class FormContainerPage extends StatelessWidget {
   }
 }
 
-class FormContainer extends StatelessWidget {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  class FormContainer extends StatelessWidget {
+    final TextEditingController emailController = TextEditingController();
+    final TextEditingController passwordController = TextEditingController();
+    Future<bool> _checkProfileExists(String email) async {
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+      final QuerySnapshot querySnapshot = await firestore
+          .collection('profiles')
+          .where('email', isEqualTo: email)
+          .get();
 
-  // Function to sign in the user with Firebase
-  Future<void> _signInUser(BuildContext context) async {
-    try {
-      final FirebaseAuth auth = FirebaseAuth.instance;
-      final UserCredential userCredential = await auth.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-      // If login is successful, navigate to the MainPage
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()), // Replace with your main page widget
-      );
-      // Navigate to another page after successful login if needed
-    } on FirebaseAuthException catch (e) {
-      // Handle errors
-      String errorMessage = e.message ?? 'An error occurred';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
+      return querySnapshot.docs.isNotEmpty;
     }
-  }
+  // Function to sign in the user with Firebase
+    Future<void> _signInUser(BuildContext context) async {
+      try {
+        print("Sign-In button clicked");
+        final FirebaseAuth auth = FirebaseAuth.instance;
+        final UserCredential userCredential = await auth.signInWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+        print("User signed in: ${userCredential.user?.email}");
 
-  @override
+        final String email = userCredential.user!.email!;
+        final bool profileExists = await _checkProfileExists(email);
+
+        if (profileExists) {
+          final String profileId = await _getProfileId(email);  // Fetch profile ID
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomePage(), // Pass profileId here
+            ),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ProfileCreationPage(email: email)),
+          );
+        }
+      } on FirebaseAuthException catch (e) {
+        print("FirebaseAuthException: ${e.message}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? 'An error occurred')),
+        );
+      }
+    }
+
+    Future<String> _getProfileId(String email) async {
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+      final QuerySnapshot querySnapshot = await firestore
+          .collection('profiles')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first.id;  // Return the profile ID
+      } else {
+        throw Exception("Profile not found");
+      }
+    }
+
+
+
+    @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(24),
