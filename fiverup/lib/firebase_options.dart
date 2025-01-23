@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -64,6 +61,16 @@ class DefaultFirebaseOptions {
     projectId: 'fiverup-a589b',
     storageBucket: 'fiverup-a589b.firebasestorage.app',
     iosBundleId: 'com.example.fiverup',
+  );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCS5C-JEqmTxGVzikYtT7g3a3zAQ-6GW-I',
+    appId: '1:487306851360:web:8d63c40bdf9caca4b07845',
+    messagingSenderId: '487306851360',
+    projectId: 'fiverup-a589b',
+    authDomain: 'fiverup-a589b.firebaseapp.com',
+    storageBucket: 'fiverup-a589b.firebasestorage.app',
+    measurementId: 'G-0Q6RZD8MSY',
   );
 
 }
