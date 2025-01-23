@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fiverup/main/main_page.dart';
+import 'package:fiverup/profile/add/profile_creation.dart';
 import 'package:fiverup/service/profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -42,15 +44,21 @@ class _SignupFormState extends State<SignupForm> {
     });
 
     try {
-      await _auth.createUserWithEmailAndPassword(
+      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _usernameController.text.trim(),
-        password: _passwordController.text,
+        password: _passwordController.text.trim(),
       );
-      // If account creation is successful, navigate to the MainPage
+
+
+      final String userId = userCredential.user!.uid;
+      await FirebaseFirestore.instance.collection('profiles').doc(userId).set({
+        'email': userCredential.user!.email,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
       Navigator.pushReplacement(
         context,
-        // SMENI TUKA
-        MaterialPageRoute(builder: (context) => HomePage(profileId: '1',)),
+        MaterialPageRoute(builder: (context) => ProfileCreationPage(email: _usernameController.text.trim())),
       );
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -62,6 +70,7 @@ class _SignupFormState extends State<SignupForm> {
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

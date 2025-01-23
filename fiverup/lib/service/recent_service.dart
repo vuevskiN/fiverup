@@ -10,11 +10,14 @@ Future<void> saveSearchHistory(String searchQuery) async {
         'query': searchQuery,
         'timestamp': FieldValue.serverTimestamp(),
       });
+      print("Search query saved: $searchQuery");
     }
   } catch (e) {
     print("Error saving search history: $e");
   }
 }
+
+
 
 Future<List<String>> getLast3Searches() async {
   try {
@@ -35,3 +38,4 @@ Future<List<String>> getLast3Searches() async {
     return [];
   }
 }
+

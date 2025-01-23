@@ -1,5 +1,7 @@
+import 'package:fiverup/job/personal_jobs/my_offers.dart';
 import 'package:fiverup/main/main_page.dart';
 import 'package:flutter/material.dart';
+import '../job/personal_jobs/my_seeking.dart';
 import '../models/profile.dart';
 import '../service/profile_service.dart';
 
@@ -95,7 +97,10 @@ class _ProfileFormState extends State<ProfileForm> {
               ),
               const SizedBox(width: 12),
               OutlinedButton(
-                onPressed: () {}, // Add functionality if needed
+                onPressed: () {
+
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> MyJobsPage(),),);
+                }, // Add functionality if needed
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   shape: RoundedRectangleBorder(
@@ -107,7 +112,10 @@ class _ProfileFormState extends State<ProfileForm> {
               ),
               const SizedBox(width: 12),
               OutlinedButton(
-                onPressed: () {}, // Add functionality if needed
+                onPressed: () {
+
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> MyOffersPage(),),);
+                }, // Add functionality if needed
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   shape: RoundedRectangleBorder(

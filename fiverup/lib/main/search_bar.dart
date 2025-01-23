@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../add new user/search_screen.dart';
+import '../filter/search_screen.dart';
 
 class PromoSection extends StatefulWidget {
   @override

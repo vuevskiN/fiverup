@@ -4,6 +4,7 @@ import '../job/edit/edit_job.dart';
 import '../models/job.dart';
 import '../service/job_service.dart';
 import '../job/add/add_job.dart';
+import '../service/recent_service.dart';
 
 
 class SearchScreen extends StatefulWidget {
@@ -230,6 +231,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return GestureDetector(
       onTap: () {
+
         // Show a dialog with job details when the card is tapped
         showDialog(
           context: context,
