@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../models/job.dart';
-import '../service/job_service.dart';
+import '../../models/job.dart';
+import '../../service/job_service.dart';
 
 class EditJobScreen extends StatefulWidget {
   final Job job;
@@ -18,6 +18,8 @@ class _EditJobScreenState extends State<EditJobScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
   late TextEditingController _hourlyRateController;
+  late bool _seeking;
+  late bool _offering;
   late String _createdBy; // The creator's email
 
   final JobService jobService = JobService();
@@ -28,6 +30,8 @@ class _EditJobScreenState extends State<EditJobScreen> {
     _titleController = TextEditingController(text: widget.job.title);
     _descriptionController = TextEditingController(text: widget.job.description);
     _hourlyRateController = TextEditingController(text: widget.job.hourlyRate.toString());
+    _seeking = widget.job.seeking;
+    _offering = widget.job.offering;
     _createdBy = widget.job.createdBy ?? _getCurrentUserEmail();
   }
 
@@ -53,6 +57,8 @@ class _EditJobScreenState extends State<EditJobScreen> {
       description: _descriptionController.text.trim(),
       hourlyRate: double.tryParse(_hourlyRateController.text.trim()) ?? widget.job.hourlyRate,
       createdBy: _createdBy,
+      seeking: _seeking,
+      offering: _offering,
     );
 
     jobService.updateJob(widget.job.jobId, updatedJob).then((_) {
@@ -103,6 +109,23 @@ class _EditJobScreenState extends State<EditJobScreen> {
     );
   }
 
+  // Update the seeking and offering states to ensure only one is true
+  void _onSeekingChanged(bool value) {
+    setState(() {
+      _seeking = value;
+      // If seeking is true, offering must be false
+      if (_seeking) _offering = false;
+    });
+  }
+
+  void _onOfferingChanged(bool value) {
+    setState(() {
+      _offering = value;
+      // If offering is true, seeking must be false
+      if (_offering) _seeking = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,6 +155,21 @@ class _EditJobScreenState extends State<EditJobScreen> {
               controller: _hourlyRateController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Hourly Rate'),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                const Text('Seeking: '),
+                Switch(
+                  value: _seeking,
+                  onChanged: _onSeekingChanged, // Use the method to update state
+                ),
+                const Text('Offering: '),
+                Switch(
+                  value: _offering,
+                  onChanged: _onOfferingChanged, // Use the method to update state
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             Row(

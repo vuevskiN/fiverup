@@ -1,4 +1,5 @@
 import 'package:fiverup/main/main_page.dart';
+import 'package:fiverup/service/profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -48,7 +49,8 @@ class _SignupFormState extends State<SignupForm> {
       // If account creation is successful, navigate to the MainPage
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        // SMENI TUKA
+        MaterialPageRoute(builder: (context) => HomePage(profileId: '1',)),
       );
     } on FirebaseAuthException catch (e) {
       setState(() {

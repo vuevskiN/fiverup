@@ -24,18 +24,19 @@ class _PromoSectionState extends State<PromoSection> {
     return Container(
       decoration: BoxDecoration(
         color: Color(0xFF415A77),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(15),
       ),
-      padding: EdgeInsets.symmetric(vertical: 25, horizontal: 42),
-      margin: EdgeInsets.only(top: 117),
+      padding: EdgeInsets.symmetric(vertical: 30, horizontal: 40),
+      margin: EdgeInsets.only(top: 100),
       child: Column(
         children: [
           Text(
             'Scale your professional',
             style: TextStyle(
-              fontSize: 21,
+              fontSize: 24,
               color: Colors.white,
               letterSpacing: -0.42,
+              fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
           ),
@@ -45,31 +46,32 @@ class _PromoSectionState extends State<PromoSection> {
               Text(
                 'workforce with',
                 style: TextStyle(
-                  fontSize: 21,
+                  fontSize: 24,
                   color: Colors.white,
                   letterSpacing: -0.42,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(width: 7),
+              SizedBox(width: 8),
               Text(
                 'freelancers',
                 style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
                   color: Colors.white,
                   letterSpacing: -0.54,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 18),
+          SizedBox(height: 20),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.black),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.black12),
             ),
-            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 14),
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             child: Row(
               children: [
                 Expanded(
@@ -78,7 +80,7 @@ class _PromoSectionState extends State<PromoSection> {
                     decoration: InputDecoration(
                       hintText: 'Search for any service...',
                       hintStyle: TextStyle(
-                        fontSize: 13,
+                        fontSize: 14,
                         color: Color(0xFF1B263B),
                       ),
                       border: InputBorder.none,

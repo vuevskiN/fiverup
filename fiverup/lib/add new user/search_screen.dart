@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
-import '../edit/edit_job.dart';
+import '../job/edit/edit_job.dart';
 import '../models/job.dart';
 import '../service/job_service.dart';
-import 'add_job.dart';
+import '../job/add/add_job.dart';
 
 
 class SearchScreen extends StatefulWidget {
@@ -80,7 +80,13 @@ class _SearchScreenState extends State<SearchScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Row(
         children: [
-          _buildCircularButton('assets/menu_icon.png'),
+          // Back arrow button
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              Navigator.of(context).pop(); // Navigate back to the previous page
+            },
+          ),
           Expanded(
             child: Container(
               alignment: Alignment.center,
@@ -100,7 +106,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
           IconButton(
-            icon: Icon(Icons.add, color: Colors.white),
+            icon: const Icon(Icons.add, color: Colors.white),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => AddJobScreen()),
@@ -111,6 +117,7 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
+
 
   Widget _buildCircularButton(String iconPath) {
     return SizedBox(
@@ -221,102 +228,134 @@ class _SearchScreenState extends State<SearchScreen> {
     bool isUserCreator = loggedInUser ==
         job.createdBy; // Check if logged-in user created the job
 
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
-      child: Container(
-        height: 150,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16.0),
-          color: Colors.white,
-        ),
-        child: Stack(
-          children: [
-            // Background (Black Rectangle)
-            Container(
-              width: double.infinity,
-              height: 90,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
-              ),
-            ),
-
-            // Job Title
-            Positioned(
-              top: 16,
-              left: 16,
-              child: Text(
-                job.title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-            // Display User Email (instead of Description)
-            Positioned(
-              left: 16,
-              bottom: 40,
-              child: Text(
-                job.createdBy ?? '', // Display user email here
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-
-            // Hourly Rate
-            Positioned(
-              left: 16,
-              bottom: 16,
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.attach_money,
-                    size: 20,
-                    color: Colors.black54,
+    return GestureDetector(
+      onTap: () {
+        // Show a dialog with job details when the card is tapped
+        showDialog(
+          context: context,
+          builder: (context) =>
+              AlertDialog(
+                title: Text(job.title),
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children: [
+                      Text('Created By: ${job.createdBy}'),
+                      Text('Description: ${job.description}'),
+                      Text('Hourly Rate: \$${job.hourlyRate}/hr'),
+                      Text(job.offering ? 'Offering' : 'Seeking'),
+                      // Add any other job details you'd like to display
+                    ],
                   ),
-                  Text(
-                    "\$${job.hourlyRate}/hr",
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
+                ),
+                actions: [
+                  TextButton(
+                    child: const Text('Close'),
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close the dialog
+                    },
                   ),
                 ],
               ),
-            ),
-
-            // Edit/Apply Button
-            if (isUserCreator) // Show edit button only if the user is the creator
-              Positioned(
-                top: 16,
-                right: 16,
-                child: IconButton(
-                  onPressed: () {
-                    print('Navigating to Edit Screen for job: ${job.title}');
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => EditJobScreen(job: job),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.edit),
-                  color: Colors.white,
-                  iconSize: 24,
+        );
+      },
+      child: Card(
+        elevation: 4,
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: Container(
+          height: 150,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16.0),
+            color: Colors.white,
+          ),
+          child: Stack(
+            children: [
+              // Background (Black Rectangle)
+              Container(
+                width: double.infinity,
+                height: 90,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(16.0)),
                 ),
               ),
-          ],
+
+              // Job Title
+              Positioned(
+                top: 16,
+                left: 16,
+                child: Text(
+                  job.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+              // Display User Email (instead of Description)
+              Positioned(
+                left: 16,
+                bottom: 40,
+                child: Text(
+                  job.offering ? 'Offering' : 'Seeking',
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+
+              // Hourly Rate
+              Positioned(
+                left: 16,
+                bottom: 16,
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.attach_money,
+                      size: 20,
+                      color: Colors.black54,
+                    ),
+                    Text(
+                      "\$${job.hourlyRate}/hr",
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Edit/Apply Button
+              if (isUserCreator) // Show edit button only if the user is the creator
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: IconButton(
+                    onPressed: () {
+                      print('Navigating to Edit Screen for job: ${job.title}');
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => EditJobScreen(job: job),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit),
+                    color: Colors.white,
+                    iconSize: 24,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

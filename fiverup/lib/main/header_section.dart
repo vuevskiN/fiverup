@@ -1,40 +1,43 @@
-import 'package:fiverup/profile/profile_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
+import '../profile/profile_screen.dart';
 
 class HeaderSection extends StatelessWidget {
+  final String profileId;
+
+  const HeaderSection({Key? key, required this.profileId}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    // Fetch the current user's profileId from FirebaseAuth (or any other method you're using to manage profileId)
-    final String profileId = FirebaseAuth.instance.currentUser?.uid ?? ''; // Replace this with actual profileId logic
-
     return Container(
       color: Color(0x0D1B2A),
       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // First CircleAvatar with Icon instead of Image
+          // Profile Icon
           GestureDetector(
             onTap: () {
-              // Navigate to ProfileScreen with profileId
+              if (profileId.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('User not authenticated. Please log in.')),
+                );
+                return;
+              }
+
+              print("PROFILE FROM HEADER SECTION: $profileId");
+
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProfileScreen(profileId: profileId), // Pass profileId here
+                  builder: (context) => ProfileScreen(profileId: profileId),
                 ),
               );
             },
             child: CircleAvatar(
               backgroundColor: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Icon(
-                  Icons.person, // Replace with the appropriate icon
-                  size: 24, // Adjust size if needed
-                  color: Colors.black, // Adjust icon color if needed
-                ),
-              ),
+              child: Icon(Icons.person, size: 24, color: Colors.black),
             ),
           ),
           Text(
@@ -46,27 +49,16 @@ class HeaderSection extends StatelessWidget {
               letterSpacing: 0.66,
             ),
           ),
-          // Second CircleAvatar with Icon instead of Image
+          // Notifications Icon
           GestureDetector(
             onTap: () {
-              // Add navigation logic for Notifications (or any other page)
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProfileScreen(profileId: profileId), // Pass profileId here too
-                ),
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Notifications coming soon!')),
               );
             },
             child: CircleAvatar(
               backgroundColor: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Icon(
-                  Icons.notifications, // Replace with the appropriate icon
-                  size: 24, // Adjust size if needed
-                  color: Colors.black, // Adjust icon color if needed
-                ),
-              ),
+              child: Icon(Icons.notifications, size: 24, color: Colors.black),
             ),
           ),
         ],

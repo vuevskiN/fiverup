@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../main/main_page.dart';
+import '../../main/main_page.dart';
 
 class ProfileCreationPage extends StatelessWidget {
   final String email;
@@ -26,7 +26,8 @@ class ProfileCreationPage extends StatelessWidget {
       // Navigate to the main page after creating the profile
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        //
+        MaterialPageRoute(builder: (context) => HomePage(profileId: '1',)),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

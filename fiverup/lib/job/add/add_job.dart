@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/job.dart';
-import '../service/job_service.dart';
+import '../../models/job.dart';
+import '../../service/job_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AddJobScreen extends StatefulWidget {
@@ -19,6 +19,9 @@ class _AddJobScreenState extends State<AddJobScreen> {
   final _descriptionController = TextEditingController();
   final _hourlyRateController = TextEditingController();
 
+  bool _isOffering = false;
+  bool _isSeeking = false;
+
   final JobService jobService = JobService();
 
   @override
@@ -30,6 +33,8 @@ class _AddJobScreenState extends State<AddJobScreen> {
       _titleController.text = widget.jobToEdit!.title;
       _descriptionController.text = widget.jobToEdit!.description;
       _hourlyRateController.text = widget.jobToEdit!.hourlyRate.toString();
+      _isOffering = widget.jobToEdit!.offering;
+      _isSeeking = widget.jobToEdit!.seeking;
     }
   }
 
@@ -39,6 +44,26 @@ class _AddJobScreenState extends State<AddJobScreen> {
     _descriptionController.dispose();
     _hourlyRateController.dispose();
     super.dispose();
+  }
+
+  void _onOfferingChanged(bool value) {
+    setState(() {
+      if (value) {
+        // If offering is set to true, set seeking to false
+        _isSeeking = false;
+      }
+      _isOffering = value;
+    });
+  }
+
+  void _onSeekingChanged(bool value) {
+    setState(() {
+      if (value) {
+        // If seeking is set to true, set offering to false
+        _isOffering = false;
+      }
+      _isSeeking = value;
+    });
   }
 
   Future<void> _addOrUpdateJob() async {
@@ -62,6 +87,8 @@ class _AddJobScreenState extends State<AddJobScreen> {
           description: _descriptionController.text.trim(),
           hourlyRate: double.parse(_hourlyRateController.text.trim()),
           createdBy: widget.jobToEdit?.createdBy ?? user.email,
+          seeking: _isSeeking,
+          offering: _isOffering,
         );
 
         if (widget.jobToEdit != null) {
@@ -123,6 +150,27 @@ class _AddJobScreenState extends State<AddJobScreen> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Offering:'),
+                  Switch(
+                    value: _isOffering,
+                    onChanged: _onOfferingChanged,
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Seeking:'),
+                  Switch(
+                    value: _isSeeking,
+                    onChanged: _onSeekingChanged,
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               ElevatedButton(

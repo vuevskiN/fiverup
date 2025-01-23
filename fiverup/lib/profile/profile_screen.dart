@@ -1,7 +1,6 @@
 import 'package:fiverup/profile/profile_form.dart';
 import 'package:fiverup/profile/profile_header.dart';
 import 'package:fiverup/profile/profile_info.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,6 +15,10 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Profile'),
+        backgroundColor: Color(0x0D1B2A),
+      ),
       body: SingleChildScrollView(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 480),
@@ -25,28 +28,31 @@ class ProfileScreen extends StatelessWidget {
               // Fetch profile data using ProfileService
               FutureBuilder<Profile?>(
                 future: Provider.of<ProfileService>(context, listen: false)
-                    .getProfileById(profileId), // Use profileId here
+                    .getProfileById(profileId),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
                   if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
+                    return Center(
+                      child: Text('Error fetching profile: ${snapshot.error}'),
+                    );
                   }
 
-                  final profile = snapshot.data;
-
-                  if (profile == null) {
-                    return const Center(child: Text('No Profile Found'));
+                  if (!snapshot.hasData || snapshot.data == null) {
+                    return const Center(
+                      child: Text('No Profile Found. Please try again later.'),
+                    );
                   }
 
-                  // Pass the profile data to each widget
+                  final profile = snapshot.data!;
+
                   return Column(
                     children: [
                       ProfileHeader(profile: profile),
                       ProfileInfo(profile: profile),
-                      ProfileForm(profile: profile),
+                      ProfileForm(profile: profile, profileId: profileId,),
                     ],
                   );
                 },

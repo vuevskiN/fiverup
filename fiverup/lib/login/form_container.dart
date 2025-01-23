@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fiverup/main/main_page.dart';
 import 'package:flutter/material.dart';
 
-import '../new_profile/profile_creation.dart';
+import '../profile/add/profile_creation.dart';
 import '../profile/profile_screen.dart';
 
 
@@ -53,10 +53,11 @@ class FormContainerPage extends StatelessWidget {
 
         if (profileExists) {
           final String profileId = await _getProfileId(email);  // Fetch profile ID
+          print("PROFILE ID FROM LOGIN SCREEN: $profileId");
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => HomePage(), // Pass profileId here
+              builder: (context) => HomePage(profileId: profileId), // Pass profileId here
             ),
           );
         } else {

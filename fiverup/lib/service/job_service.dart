@@ -16,6 +16,8 @@ class JobService {
         'description': job.description,
         'hourlyRate': job.hourlyRate,
         'createdBy': user.email, // Store the user's email as the creator
+        'seeking': job.seeking,
+        'offering': job.offering,
       });
     }
   }
@@ -26,6 +28,8 @@ class JobService {
       'title': updatedJob.title,
       'description': updatedJob.description,
       'hourlyRate': updatedJob.hourlyRate,
+      'seeking': updatedJob.seeking,
+      'offering': updatedJob.offering,
     });
   }
 
@@ -41,6 +45,15 @@ class JobService {
         return Job.fromFirestore(doc.id, doc.data() as Map<String, dynamic>);
       }).toList();
     });
+  }
+
+  // Fetch a single job by its ID
+  Future<Job?> getJobById(String jobId) async {
+    DocumentSnapshot doc = await _firestore.collection('jobs').doc(jobId).get();
+    if (doc.exists) {
+      return Job.fromFirestore(doc.id, doc.data() as Map<String, dynamic>);
+    }
+    return null;
   }
 
   final CollectionReference jobsCollection =
