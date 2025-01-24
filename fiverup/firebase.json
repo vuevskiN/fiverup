@@ -1,1 +1,39 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"fiverup-a589b","appId":"1:487306851360:android:1377e55df1242db2b07845","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"fiverup-a589b","configurations":{"android":"1:487306851360:android:1377e55df1242db2b07845","ios":"1:487306851360:ios:2183c115dd69097cb07845","web":"1:487306851360:web:8d63c40bdf9caca4b07845"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "fiverup-a589b",
+          "appId": "1:487306851360:android:1377e55df1242db2b07845",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "fiverup-a589b",
+          "configurations": {
+            "android": "1:487306851360:android:1377e55df1242db2b07845",
+            "ios": "1:487306851360:ios:2183c115dd69097cb07845",
+            "web": "1:487306851360:web:8d63c40bdf9caca4b07845"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    }
+  ]
+}

@@ -1,11 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Job {
   final String jobId;
   final String title;
   final String description;
   final double hourlyRate;
   final String? createdBy;
-  bool seeking; // New field: true if the job is seeking, false otherwise
-  bool offering; // New field: true if the job is offering, false otherwise
+  final bool seeking;
+  final bool offering;
+  final DateTime? dueDate;
+  final List<Map<String, dynamic>> comments; // New field for comments
 
   Job({
     required this.jobId,
@@ -15,14 +19,14 @@ class Job {
     this.createdBy,
     required this.seeking,
     required this.offering,
+    this.dueDate,
+    this.comments = const [], // Initialize with an empty list
   }) {
-    // Ensure seeking and offering can't both be true
     if (seeking == offering) {
       throw ArgumentError('Both seeking and offering cannot be true at the same time.');
     }
   }
 
-  // Factory constructor for converting data from Firestore to Job object
   factory Job.fromFirestore(String id, Map<String, dynamic> data) {
     return Job(
       jobId: id,
@@ -30,12 +34,13 @@ class Job {
       description: data['description'],
       hourlyRate: data['hourlyRate'],
       createdBy: data['createdBy'],
-      seeking: data['seeking'] ?? true,  // Default to false if not provided
-      offering: data['offering'] ?? false, // Default to false if not provided
+      seeking: data['seeking'] ?? true,
+      offering: data['offering'] ?? false,
+      dueDate: data['dueDate'] != null ? (data['dueDate'] as Timestamp).toDate() : null,
+      comments: data['comments'] != null ? List<Map<String, dynamic>>.from(data['comments']) : [], // Fetch comments
     );
   }
 
-  // Convert Job object to Map for Firestore storage
   Map<String, dynamic> toMap() {
     return {
       'title': title,
@@ -44,6 +49,8 @@ class Job {
       'createdBy': createdBy,
       'seeking': seeking,
       'offering': offering,
+      'dueDate': dueDate,
+      'comments': comments, // Store comments as a list of maps
     };
   }
 }

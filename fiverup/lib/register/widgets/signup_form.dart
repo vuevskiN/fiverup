@@ -44,18 +44,27 @@ class _SignupFormState extends State<SignupForm> {
     });
 
     try {
+      // Create the user with email and password
       final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _usernameController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-
       final String userId = userCredential.user!.uid;
-      await FirebaseFirestore.instance.collection('profiles').doc(userId).set({
-        'email': userCredential.user!.email,
+
+      // Now save the email in Firestore (in the 'users' collection or 'profiles' collection)
+      await FirebaseFirestore.instance.collection('users').doc(userId).set({
+        'email': userCredential.user!.email,  // Explicitly save the email here
         'createdAt': FieldValue.serverTimestamp(),
       });
 
+      // Optionally save email in the 'profiles' collection as well if needed
+      await FirebaseFirestore.instance.collection('profiles').doc(userId).set({
+        'email': userCredential.user!.email, // Saving email in 'profiles' as well
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // Navigate to the profile creation page
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => ProfileCreationPage(email: _usernameController.text.trim())),
@@ -70,6 +79,7 @@ class _SignupFormState extends State<SignupForm> {
       });
     }
   }
+
 
 
   @override

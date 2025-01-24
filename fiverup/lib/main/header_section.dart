@@ -1,7 +1,11 @@
-import 'package:flutter/cupertino.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../login/form_container.dart';
+import '../notification_screen/botification_screen.dart';
 import '../profile/profile_screen.dart';
+import '../register/widgets/signup_form.dart';
 
 class HeaderSection extends StatelessWidget {
   final String profileId;
@@ -26,8 +30,6 @@ class HeaderSection extends StatelessWidget {
                 return;
               }
 
-              print("PROFILE FROM HEADER SECTION: $profileId");
-
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -50,19 +52,102 @@ class HeaderSection extends StatelessWidget {
             ),
           ),
           // Notifications Icon
-          GestureDetector(
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Notifications coming soon!')),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('notifications')
+                .where('receiverEmail', isEqualTo: profileId)
+                .where('isRead', isEqualTo: false) // filter unread notifications
+                .snapshots(),
+            builder: (context, snapshot) {
+              Color bellColor = Colors.black;
+              if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                bellColor = Colors.red; // Unread notifications, turn bell red
+              }
+
+              return IconButton(
+                icon: Icon(Icons.notifications, color: bellColor),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NotificationsScreen(),
+                    ),
+                  );
+                },
               );
             },
-            child: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.notifications, size: 24, color: Colors.black),
-            ),
+          ),
+
+          // Dropdown Menu with Sign Out and Notifications
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: Colors.black),
+            onSelected: (String value) {
+              if (value == 'notifications') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Notifications coming soon!')),
+                );
+              } else if (value == 'signOut') {
+                _showSignOutDialog(context);
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                PopupMenuItem<String>(
+                  value: 'notifications',
+                  child: Row(
+                    children: [
+                      Icon(Icons.notifications, size: 24),
+                      SizedBox(width: 8),
+                      Text('Notifications'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'signOut',
+                  child: Row(
+                    children: [
+                      Icon(Icons.exit_to_app, size: 24),
+                      SizedBox(width: 8),
+                      Text('Sign Out'),
+                    ],
+                  ),
+                ),
+              ];
+            },
           ),
         ],
       ),
+    );
+  }
+
+  void _showSignOutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Sign Out'),
+          content: Text('Are you sure you want to log out?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await FirebaseAuth.instance.signOut();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => FormContainerPage()),
+                );
+              },
+              child: Text('Log Out'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

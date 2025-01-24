@@ -3,9 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../filter/search_screen.dart';
-import '../service/recent_service.dart';
-import 'button_section.dart';
 import 'category_section.dart';
+import 'comment_section.dart';
 import 'header_section.dart';
 
 class HomePage extends StatefulWidget {
@@ -29,7 +28,6 @@ class _HomePageState extends State<HomePage> {
   // Function to refresh the search history
   void _refreshSearchHistory() {
     setState(() {
-      _recentSearches = getLast3Searches(); // Re-fetch the data to update the UI
     });
   }
 
@@ -41,8 +39,8 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             HeaderSection(profileId: widget.profileId),
             PromoSection(), // Displays the last 3 searches
-            ButtonSection(), // ButtonSection will be updated on state changes
             PopularSection(),
+            CommentSection(),
           ],
         ),
       ),

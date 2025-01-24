@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // For formatting the selected date
 import '../../models/job.dart';
 import '../../service/job_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,7 +21,8 @@ class _AddJobScreenState extends State<AddJobScreen> {
   final _hourlyRateController = TextEditingController();
 
   bool _isOffering = false;
-  bool _isSeeking = false;
+  bool _isSeeking = true; // Initially set seeking to true
+  DateTime? _dueDate; // The new field for due date
 
   final JobService jobService = JobService();
 
@@ -35,6 +37,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
       _hourlyRateController.text = widget.jobToEdit!.hourlyRate.toString();
       _isOffering = widget.jobToEdit!.offering;
       _isSeeking = widget.jobToEdit!.seeking;
+      _dueDate = widget.jobToEdit!.dueDate; // Set due date if editing
     }
   }
 
@@ -49,8 +52,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
   void _onOfferingChanged(bool value) {
     setState(() {
       if (value) {
-        // If offering is set to true, set seeking to false
-        _isSeeking = false;
+        _isSeeking = false; // If offering is true, set seeking to false
       }
       _isOffering = value;
     });
@@ -59,15 +61,14 @@ class _AddJobScreenState extends State<AddJobScreen> {
   void _onSeekingChanged(bool value) {
     setState(() {
       if (value) {
-        // If seeking is set to true, set offering to false
-        _isOffering = false;
+        _isOffering = false; // If seeking is true, set offering to false
       }
       _isSeeking = value;
     });
   }
 
   Future<void> _addOrUpdateJob() async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() && (_isSeeking || _isOffering) && _dueDate != null) {
       final user = FirebaseAuth.instance.currentUser;
 
       if (user == null) {
@@ -89,6 +90,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
           createdBy: widget.jobToEdit?.createdBy ?? user.email,
           seeking: _isSeeking,
           offering: _isOffering,
+          dueDate: _dueDate!, // Pass the selected due date
         );
 
         if (widget.jobToEdit != null) {
@@ -111,8 +113,43 @@ class _AddJobScreenState extends State<AddJobScreen> {
           SnackBar(content: Text('Failed to save job: $error')),
         );
       }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('All fields must be filled, including the due date, and at least one type (Seeking or Offering) must be selected.')),
+      );
     }
   }
+
+  Future<void> _pickDueDate() async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _dueDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)), // Limit due date to within 1 year
+    );
+
+    if (pickedDate != null) {
+      // If the date is picked, now allow the user to pick a time
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_dueDate ?? DateTime.now()), // Default time is current time if no previous due date
+      );
+
+      if (pickedTime != null) {
+        // Combine the selected date and time into a DateTime object
+        setState(() {
+          _dueDate = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +192,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Offering:'),
+                  const Text('Offering:'),
                   Switch(
                     value: _isOffering,
                     onChanged: _onOfferingChanged,
@@ -165,7 +202,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Seeking:'),
+                  const Text('Seeking:'),
                   Switch(
                     value: _isSeeking,
                     onChanged: _onSeekingChanged,
@@ -173,6 +210,19 @@ class _AddJobScreenState extends State<AddJobScreen> {
                 ],
               ),
               const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Text('Due Date:'),
+                  TextButton(
+                    onPressed: _pickDueDate,
+                    child: Text(
+                      _dueDate == null
+                          ? 'Select Date'
+                          : DateFormat('yyyy-MM-dd').format(_dueDate!),
+                    ),
+                  ),
+                ],
+              ),
               ElevatedButton(
                 onPressed: _addOrUpdateJob,
                 child: Text(widget.jobToEdit != null ? 'Update Job' : 'Add Job'),

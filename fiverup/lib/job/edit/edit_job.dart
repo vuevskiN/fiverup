@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../models/job.dart';
 import '../../service/job_service.dart';
@@ -21,6 +22,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
   late bool _seeking;
   late bool _offering;
   late String _createdBy; // The creator's email
+  late DateTime? _dueDate;
 
   final JobService jobService = JobService();
 
@@ -33,6 +35,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
     _seeking = widget.job.seeking;
     _offering = widget.job.offering;
     _createdBy = widget.job.createdBy ?? _getCurrentUserEmail();
+    _dueDate = widget.job.dueDate;
   }
 
   @override
@@ -49,8 +52,36 @@ class _EditJobScreenState extends State<EditJobScreen> {
     return user != null ? user.email ?? 'guest@example.com' : 'guest@example.com';
   }
 
+  // Validate input fields
+  bool _validateInputs() {
+    if (_titleController.text.trim().isEmpty) {
+      _showError('Job title cannot be empty.');
+      return false;
+    }
+    if (_descriptionController.text.trim().isEmpty) {
+      _showError('Job description cannot be empty.');
+      return false;
+    }
+    final hourlyRate = double.tryParse(_hourlyRateController.text.trim());
+    if (hourlyRate == null || hourlyRate <= 0) {
+      _showError('Hourly rate must be a positive number.');
+      return false;
+    }
+    if (!_seeking && !_offering) {
+      _showError('You must select either "Seeking" or "Offering".');
+      return false;
+    }
+    return true;
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   // Save the updated job
   void _saveChanges() {
+    if (!_validateInputs()) return;
+
     final updatedJob = Job(
       jobId: widget.job.jobId, // Include the jobId here
       title: _titleController.text.trim(),
@@ -59,6 +90,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
       createdBy: _createdBy,
       seeking: _seeking,
       offering: _offering,
+      dueDate: _dueDate,
     );
 
     jobService.updateJob(widget.job.jobId, updatedJob).then((_) {
@@ -113,7 +145,6 @@ class _EditJobScreenState extends State<EditJobScreen> {
   void _onSeekingChanged(bool value) {
     setState(() {
       _seeking = value;
-      // If seeking is true, offering must be false
       if (_seeking) _offering = false;
     });
   }
@@ -121,9 +152,23 @@ class _EditJobScreenState extends State<EditJobScreen> {
   void _onOfferingChanged(bool value) {
     setState(() {
       _offering = value;
-      // If offering is true, seeking must be false
       if (_offering) _seeking = false;
     });
+  }
+
+  // Pick a due date using a date picker
+  void _pickDueDate() async {
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _dueDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (pickedDate != null && pickedDate != _dueDate) {
+      setState(() {
+        _dueDate = pickedDate;
+      });
+    }
   }
 
   @override
@@ -162,12 +207,26 @@ class _EditJobScreenState extends State<EditJobScreen> {
                 const Text('Seeking: '),
                 Switch(
                   value: _seeking,
-                  onChanged: _onSeekingChanged, // Use the method to update state
+                  onChanged: _onSeekingChanged,
                 ),
                 const Text('Offering: '),
                 Switch(
                   value: _offering,
-                  onChanged: _onOfferingChanged, // Use the method to update state
+                  onChanged: _onOfferingChanged,
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                const Text('Due Date: '),
+                TextButton(
+                  onPressed: _pickDueDate,
+                  child: Text(
+                    _dueDate != null
+                        ? DateFormat('yyyy-MM-dd').format(_dueDate!)
+                        : 'Pick a date',
+                  ),
                 ),
               ],
             ),

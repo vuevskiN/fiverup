@@ -7,7 +7,6 @@ class JobService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Add a new job
   Future<void> addJob(Job job) async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -15,14 +14,15 @@ class JobService {
         'title': job.title,
         'description': job.description,
         'hourlyRate': job.hourlyRate,
-        'createdBy': user.email, // Store the user's email as the creator
+        'createdBy': user.email,
         'seeking': job.seeking,
         'offering': job.offering,
+        'dueDate': job.dueDate, // Save as Firestore Timestamp
       });
     }
   }
 
-  // Update an existing job
+
   Future<void> updateJob(String jobId, Job updatedJob) async {
     await _firestore.collection('jobs').doc(jobId).update({
       'title': updatedJob.title,
@@ -30,15 +30,16 @@ class JobService {
       'hourlyRate': updatedJob.hourlyRate,
       'seeking': updatedJob.seeking,
       'offering': updatedJob.offering,
+      'dueDate': updatedJob.dueDate, // Update Firestore Timestamp
     });
   }
+
 
   // Delete a job
   Future<void> deleteJob(String jobId) async {
     await _firestore.collection('jobs').doc(jobId).delete();
   }
 
-  // Fetch all jobs and stream them
   Stream<List<Job>> getAllJobs() {
     return _firestore.collection('jobs').snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
@@ -46,6 +47,7 @@ class JobService {
       }).toList();
     });
   }
+
 
   // Fetch a single job by its ID
   Future<Job?> getJobById(String jobId) async {
@@ -56,6 +58,26 @@ class JobService {
     return null;
   }
 
+  Future<void> addCommentToJob(String jobId, String commentText, String userEmail) async {
+    try {
+      final comment = {
+        'userEmail': userEmail,
+        'comment': commentText,
+        'timestamp': FieldValue.serverTimestamp(),
+      };
+
+      // Add comment to the job's 'comments' field in Firestore
+      await _firestore.collection('jobs').doc(jobId).update({
+        'comments': FieldValue.arrayUnion([comment]), // Use arrayUnion to add to the list
+      });
+    } catch (e) {
+      throw Exception('Failed to add comment: $e');
+    }
+  }
+
+
   final CollectionReference jobsCollection =
   FirebaseFirestore.instance.collection('jobs');
+
+
 }

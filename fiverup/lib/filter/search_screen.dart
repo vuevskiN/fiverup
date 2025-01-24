@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../application_screen/lapplication_screen.dart';
 import '../job/edit/edit_job.dart';
 import '../models/job.dart';
+import '../service/application_service.dart';
 import '../service/job_service.dart';
 import '../job/add/add_job.dart';
 
@@ -18,6 +20,7 @@ class _SearchScreenState extends State<SearchScreen> {
   late TextEditingController _searchController;
   final JobService jobService = JobService();
   String? loggedInUser; // Store the logged-in user
+  DateTime? _selectedDate;
 
   @override
   void initState() {
@@ -43,6 +46,22 @@ class _SearchScreenState extends State<SearchScreen> {
     super.dispose();
   }
 
+  // Method to show the date picker
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(), // Default to today
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked; // Update the selected date
+      });
+    }
+  }
+
   void _performSearch() {
     final query = _searchController.text.trim();
     Navigator.pushReplacement(
@@ -65,6 +84,19 @@ class _SearchScreenState extends State<SearchScreen> {
               _buildAppBar(context),
               _buildSearchBar(),
               _buildJobList(),
+              // Button to trigger date picker
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: () => _selectDate(context),
+                  child: Text(
+                    _selectedDate == null
+                        ? 'Pick a Date'
+                        : 'Selected Date: ${_selectedDate!.toLocal()}'.split(
+                        ' ')[0],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -79,7 +111,6 @@ class _SearchScreenState extends State<SearchScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Row(
         children: [
-          // Back arrow button
           IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
@@ -116,7 +147,7 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-  
+
   Widget _buildSearchBar() {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 19),
@@ -200,13 +231,10 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildJobCard(Job job) {
-    bool isUserCreator = loggedInUser ==
-        job.createdBy; // Check if logged-in user created the job
+    bool isUserCreator = loggedInUser == job.createdBy;
 
     return GestureDetector(
       onTap: () {
-
-        // Show a dialog with job details when the card is tapped
         showDialog(
           context: context,
           builder: (context) =>
@@ -219,7 +247,6 @@ class _SearchScreenState extends State<SearchScreen> {
                       Text('Description: ${job.description}'),
                       Text('Hourly Rate: \$${job.hourlyRate}/hr'),
                       Text(job.offering ? 'Offering' : 'Seeking'),
-                      // Add any other job details you'd like to display
                     ],
                   ),
                 ),
@@ -227,9 +254,48 @@ class _SearchScreenState extends State<SearchScreen> {
                   TextButton(
                     child: const Text('Close'),
                     onPressed: () {
-                      Navigator.of(context).pop(); // Close the dialog
+                      Navigator.of(context).pop();
                     },
                   ),
+                  if (isUserCreator)
+                    TextButton(
+                      child: const Text('View Applicants'),
+                      onPressed: () async {
+                        final applicationService = ApplicationService();
+                        final applications = await applicationService
+                            .fetchApplications(job.jobId);
+
+                       // Navigator.of(context).pop();
+                        // Navigate to a new screen to show the list of applicants
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              print("Navigating to ApplicantListScreen");
+                              return ApplicantListScreen(
+                                jobTitle: job.title,
+                                applications: applications,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    )
+                  else
+                    TextButton(
+                      child: const Text('Apply'),
+                      onPressed: () async {
+                        final applicationService = ApplicationService();
+                        await applicationService.applyForJob(
+                            job.jobId, job.createdBy!);
+
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('You have applied for the job.')),
+                        );
+                      },
+                    ),
                 ],
               ),
         );
@@ -242,94 +308,31 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
         child: Container(
           height: 150,
+          padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16.0),
             color: Colors.white,
           ),
-          child: Stack(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Background (Black Rectangle)
-              Container(
-                width: double.infinity,
-                height: 90,
-                decoration: BoxDecoration(
+              Text(
+                job.offering ? 'Offering' : 'Seeking',
+                style: const TextStyle(
                   color: Colors.black,
-                  borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(16.0)),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-
-              // Job Title
-              Positioned(
-                top: 16,
-                left: 16,
-                child: Text(
-                  job.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+              const SizedBox(height: 8),
+              Text(
+                job.title,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-
-              // Display User Email (instead of Description)
-              Positioned(
-                left: 16,
-                bottom: 40,
-                child: Text(
-                  job.offering ? 'Offering' : 'Seeking',
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-
-              // Hourly Rate
-              Positioned(
-                left: 16,
-                bottom: 16,
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.attach_money,
-                      size: 20,
-                      color: Colors.black54,
-                    ),
-                    Text(
-                      "\$${job.hourlyRate}/hr",
-                      style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Edit/Apply Button
-              if (isUserCreator) // Show edit button only if the user is the creator
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: IconButton(
-                    onPressed: () {
-                      print('Navigating to Edit Screen for job: ${job.title}');
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => EditJobScreen(job: job),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.edit),
-                    color: Colors.white,
-                    iconSize: 24,
-                  ),
-                ),
             ],
           ),
         ),

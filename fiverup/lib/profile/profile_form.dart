@@ -1,7 +1,7 @@
-import 'package:fiverup/job/personal_jobs/my_offers.dart';
-import 'package:fiverup/main/main_page.dart';
 import 'package:flutter/material.dart';
+import '../job/personal_jobs/my_offers.dart';
 import '../job/personal_jobs/my_seeking.dart';
+import '../main/main_page.dart';
 import '../models/profile.dart';
 import '../service/profile_service.dart';
 
@@ -10,8 +10,6 @@ class ProfileForm extends StatefulWidget {
   final String profileId;
 
   const ProfileForm({super.key, required this.profile, required this.profileId});
-
-
 
   @override
   _ProfileFormState createState() => _ProfileFormState();
@@ -23,7 +21,6 @@ class _ProfileFormState extends State<ProfileForm> {
   late TextEditingController _professionController;
   late TextEditingController _aboutController;
   final ProfileService _profileService = ProfileService();
-
 
   @override
   void initState() {
@@ -47,9 +44,9 @@ class _ProfileFormState extends State<ProfileForm> {
       // Create an updated Profile object
       final updatedProfile = Profile(
         id: widget.profile.id,
-        name: _nameController.text,
-        profession: _professionController.text,
-        about: _aboutController.text,
+        name: _nameController.text.trim(),
+        profession: _professionController.text.trim(),
+        about: _aboutController.text.trim(),
         imageUrl: widget.profile.imageUrl,
         avatarUrl: widget.profile.avatarUrl,
       );
@@ -71,7 +68,6 @@ class _ProfileFormState extends State<ProfileForm> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -98,9 +94,8 @@ class _ProfileFormState extends State<ProfileForm> {
               const SizedBox(width: 12),
               OutlinedButton(
                 onPressed: () {
-
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> MyJobsPage(),),);
-                }, // Add functionality if needed
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => MyJobsPage()));
+                },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   shape: RoundedRectangleBorder(
@@ -113,9 +108,8 @@ class _ProfileFormState extends State<ProfileForm> {
               const SizedBox(width: 12),
               OutlinedButton(
                 onPressed: () {
-
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> MyOffersPage(),),);
-                }, // Add functionality if needed
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => MyOffersPage()));
+                },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   shape: RoundedRectangleBorder(
@@ -149,7 +143,18 @@ class _ProfileFormState extends State<ProfileForm> {
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
-                    validator: (value) => value == null || value.isEmpty ? 'Name is required' : null,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Name is required';
+                      }
+                      if (value.trim().length < 3) {
+                        return 'Name must be at least 3 characters';
+                      }
+                      if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+                        return 'Name must only contain letters and spaces';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 15),
                   const Text('Profession'),
@@ -161,7 +166,15 @@ class _ProfileFormState extends State<ProfileForm> {
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
-                    validator: (value) => value == null || value.isEmpty ? 'Profession is required' : null,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Profession is required';
+                      }
+                      if (value.trim().length < 3) {
+                        return 'Profession must be at least 3 characters';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 15),
                   const Text('About'),
@@ -174,7 +187,15 @@ class _ProfileFormState extends State<ProfileForm> {
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
-                    validator: (value) => value == null || value.isEmpty ? 'About is required' : null,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'About is required';
+                      }
+                      if (value.trim().length < 10) {
+                        return 'About section must be at least 10 characters';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 8),
                   Center(
