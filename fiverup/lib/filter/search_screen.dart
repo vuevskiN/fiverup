@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
+import 'package:firebase_auth/firebase_auth.dart';
 import '../job/edit/edit_job.dart';
 import '../models/job.dart';
 import '../service/job_service.dart';
 import '../job/add/add_job.dart';
-import '../service/recent_service.dart';
-
 
 class SearchScreen extends StatefulWidget {
   final String searchQuery;
@@ -118,31 +116,7 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-
-
-  Widget _buildCircularButton(String iconPath) {
-    return SizedBox(
-      width: 48,
-      height: 48,
-      child: Center(
-        child: Container(
-          width: 40,
-          height: 40,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-          ),
-          padding: const EdgeInsets.all(8),
-          child: Image.asset(
-            iconPath,
-            width: 24,
-            height: 24,
-            fit: BoxFit.contain,
-          ),
-        ),
-      ),
-    );
-  }
-
+  
   Widget _buildSearchBar() {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 19),

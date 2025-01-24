@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import '../../main/main_page.dart';
 
@@ -14,8 +15,11 @@ class ProfileCreationPage extends StatelessWidget {
   Future<void> _createProfile(BuildContext context) async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+    // Generate a document ID
+    final docRef = firestore.collection('profiles').doc();
+
     try {
-      await firestore.collection('profiles').add({
+      await docRef.set({
         'email': email,
         'name': nameController.text.trim(),
         'profession': professionController.text.trim(),
@@ -23,11 +27,12 @@ class ProfileCreationPage extends StatelessWidget {
         'imageUrl': '', // Placeholder for image URL
       });
 
-      // Navigate to the main page after creating the profile
+      // Navigate to the HomePage with the new profileId
       Navigator.pushReplacement(
         context,
-        //
-        MaterialPageRoute(builder: (context) => HomePage(profileId: '1',)),
+        MaterialPageRoute(
+          builder: (context) => HomePage(profileId: docRef.id),
+        ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
