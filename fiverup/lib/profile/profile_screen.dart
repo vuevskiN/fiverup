@@ -3,7 +3,6 @@ import 'package:fiverup/profile/profile_header.dart';
 import 'package:fiverup/profile/profile_info.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../models/profile.dart';
 import '../service/profile_service.dart';
 
@@ -16,16 +15,17 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
-        backgroundColor: Color(0x0D1B2A),
+        title: const Text('Profile'),
+        backgroundColor: const Color(0xFF0D1B2A),
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 480),
-          padding: const EdgeInsets.only(bottom: 165),
+          padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              // Fetch profile data using ProfileService
               FutureBuilder<Profile?>(
                 future: Provider.of<ProfileService>(context, listen: false)
                     .getProfileById(profileId),
@@ -50,9 +50,9 @@ class ProfileScreen extends StatelessWidget {
 
                   return Column(
                     children: [
-                      ProfileHeader(profile: profile),
-                      ProfileInfo(profile: profile),
-                      ProfileForm(profile: profile, profileId: profileId,),
+                      ProfileInfoScreen(profile: profile),
+                      const SizedBox(height: 20),
+                      ProfileForm(profile: profile, profileId: profileId),
                     ],
                   );
                 },

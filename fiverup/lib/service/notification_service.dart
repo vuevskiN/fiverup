@@ -18,14 +18,19 @@ class NotificationService {
 
   Stream<List<Map<String, dynamic>>> getNotifications() {
     return _firestore
-        .collection('notifications') // No filters applied here
-        .orderBy('timestamp', descending: true) // Ordered by timestamp
+        .collection('notifications')
+        .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) {
-      print("Fetched ${snapshot.docs.length} notifications."); // Debugging line
-      return snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id; // Add document ID for deletion
+        return data;
+      }).toList();
     });
   }
 
-
+  Future<void> deleteNotification(String notificationId) async {
+    await _firestore.collection('notifications').doc(notificationId).delete();
+  }
 }

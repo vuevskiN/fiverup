@@ -1,9 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fiverup/main/main_page.dart';
-import 'package:fiverup/profile/add/profile_creation.dart';
-import 'package:fiverup/service/profile_service.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../login/form_container.dart';
+import '../../profile/add/profile_creation.dart';
 
 class SignupForm extends StatefulWidget {
   const SignupForm({Key? key}) : super(key: key);
@@ -44,7 +44,6 @@ class _SignupFormState extends State<SignupForm> {
     });
 
     try {
-      // Create the user with email and password
       final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _usernameController.text.trim(),
         password: _passwordController.text.trim(),
@@ -52,19 +51,16 @@ class _SignupFormState extends State<SignupForm> {
 
       final String userId = userCredential.user!.uid;
 
-      // Now save the email in Firestore (in the 'users' collection or 'profiles' collection)
       await FirebaseFirestore.instance.collection('users').doc(userId).set({
-        'email': userCredential.user!.email,  // Explicitly save the email here
+        'email': userCredential.user!.email,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // Optionally save email in the 'profiles' collection as well if needed
       await FirebaseFirestore.instance.collection('profiles').doc(userId).set({
-        'email': userCredential.user!.email, // Saving email in 'profiles' as well
+        'email': userCredential.user!.email,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // Navigate to the profile creation page
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => ProfileCreationPage(email: _usernameController.text.trim())),
@@ -80,13 +76,11 @@ class _SignupFormState extends State<SignupForm> {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(27),
       margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(27),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(9),
@@ -100,7 +94,7 @@ class _SignupFormState extends State<SignupForm> {
             const Text(
               'Create an Account',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
                 letterSpacing: -0.48,
               ),
@@ -109,27 +103,27 @@ class _SignupFormState extends State<SignupForm> {
             _buildFormField(
               label: 'Email',
               controller: _usernameController,
-              hintText: 'jane.doe@example.com',
+              hintText: 'Enter your email',
             ),
             const SizedBox(height: 27),
             _buildFormField(
               label: 'Password',
               controller: _passwordController,
-              hintText: 'password',
+              hintText: 'Enter your password',
               obscureText: true,
             ),
             const SizedBox(height: 27),
             _buildFormField(
-              label: 'Repeat Password',
+              label: 'Confirm Password',
               controller: _confirmPasswordController,
-              hintText: 'repeat password',
+              hintText: 'Repeat your password',
               obscureText: true,
             ),
             if (_errorMessage != null) ...[
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Text(
                 _errorMessage!,
-                style: const TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red, fontSize: 14),
               ),
             ],
             const SizedBox(height: 27),
@@ -148,19 +142,31 @@ class _SignupFormState extends State<SignupForm> {
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
                   'Sign Up',
-                  style: TextStyle(
-                    color: Color(0xFFF5F5F5),
-                    fontSize: 18,
-                  ),
+                  style: TextStyle(color: Color(0xFFF5F5F5), fontSize: 18),
                 ),
               ),
             ),
             const SizedBox(height: 27),
-            Center(
-              child: Icon(
-                Icons.login, // Example icon for social login
-                size: 42,
-                color: const Color(0xFF2C2C2C),
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF1E1E1E),
+                  height: 1.4,
+                ),
+                children: [
+                  const TextSpan(text: 'Already have an account? '),
+                  TextSpan(
+                    text: 'Log In',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => FormContainerPage()),
+                        );
+                      },
+                  ),
+                ],
               ),
             ),
           ],
@@ -196,18 +202,11 @@ class _SignupFormState extends State<SignupForm> {
               color: Color(0xFFB3B3B3),
               fontSize: 18,
             ),
-            filled: true,
-            fillColor: Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(9),
-              borderSide: const BorderSide(
-                color: Color(0xFFD9D9D9),
-              ),
+              borderSide: const BorderSide(color: Color(0xFFD9D9D9)),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 14,
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {

@@ -4,7 +4,7 @@ class Profile {
   final String profession;
   final String about;
   final String imageUrl;
-  final String avatarUrl; // Add a separate avatar URL
+  final String avatarUrl;
 
   Profile({
     required this.id,
@@ -12,10 +12,10 @@ class Profile {
     required this.profession,
     required this.about,
     required this.imageUrl,
-    required this.avatarUrl, // Include avatar URL
+    required this.avatarUrl,
   });
 
-  // Factory method to create a Profile from Firestore data
+
   factory Profile.fromFirestore(String id, Map<String, dynamic> data) {
     return Profile(
       id: id,
@@ -23,18 +23,18 @@ class Profile {
       profession: data['profession'] ?? '',
       about: data['about'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
-      avatarUrl: data['avatarUrl'] ?? '', // Include avatar URL
+      avatarUrl: data['avatarUrl'] ?? '',
     );
   }
 
-  // Convert a Profile to a map for Firestore
+
   Map<String, dynamic> toMap() {
     return {
       'name': name,
       'profession': profession,
       'about': about,
       'imageUrl': imageUrl,
-      'avatarUrl': avatarUrl, // Include avatar URL
+      'avatarUrl': avatarUrl,
     };
   }
 }

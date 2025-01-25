@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../application_screen/lapplication_screen.dart';
@@ -6,6 +7,7 @@ import '../models/job.dart';
 import '../service/application_service.dart';
 import '../service/job_service.dart';
 import '../job/add/add_job.dart';
+import '../service/profileImg_service.dart';
 
 class SearchScreen extends StatefulWidget {
   final String searchQuery;
@@ -19,24 +21,71 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   late TextEditingController _searchController;
   final JobService jobService = JobService();
-  String? loggedInUser; // Store the logged-in user
+  final ImageService profileImgService = ImageService();
+  String? loggedInUser;
+  String? userProfileImageUrl; // Store the user's profile image URL
   DateTime? _selectedDate;
+  int _currentPage = 1;
+  int _jobsPerPage = 10;
+  int _totalJobs = 0;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  CollectionReference imagesCollection = FirebaseFirestore.instance.collection('images');
+
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController(text: widget.searchQuery);
-    _getLoggedInUser(); // Get logged-in user on screen load
+    _getLoggedInUser();
+    _getTotalJobs();
   }
+
 
   Future<void> _getLoggedInUser() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       setState(() {
-        loggedInUser = user?.email; // Get the email of the logged-in user
+        loggedInUser = user?.email;
       });
+      if (loggedInUser != null) {
+        _fetchUserProfileImageUrl(loggedInUser!);
+      }
     } catch (e) {
       print("Error getting logged-in user: $e");
+    }
+  }
+
+  Future<String?> getUserProfileImage(String userId) async {
+    try {
+
+      QuerySnapshot snapshot = await imagesCollection.where('userId', isEqualTo: userId).get();
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.first['icon']; // Return the icon name (string)
+      }
+    } catch (e) {
+      print("Error fetching profile image: $e");
+    }
+    return null;
+  }
+
+  Future<void> _fetchUserProfileImageUrl(String email) async {
+    final imageUrl = await profileImgService.getUserProfileImage(email);
+    setState(() {
+      userProfileImageUrl = imageUrl; // Store the image URL
+    });
+  }
+
+  Future<void> _getTotalJobs() async {
+    try {
+      final jobs = await jobService
+          .getAllJobs()
+          .first;
+      setState(() {
+        _totalJobs = jobs.length;
+      });
+    }
+    catch (e) {
+      print("Error fetching total jobs: $e");
     }
   }
 
@@ -72,6 +121,22 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  // Method to handle next page navigation
+  void _nextPage() {
+    setState(() {
+      _currentPage++;
+    });
+  }
+
+  // Method to handle previous page navigation
+  void _previousPage() {
+    setState(() {
+      if (_currentPage > 1) {
+        _currentPage--;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,6 +162,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 ),
               ),
+              _buildPagination(),
             ],
           ),
         ),
@@ -150,46 +216,63 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildSearchBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 19),
-      padding: const EdgeInsets.symmetric(horizontal: 37, vertical: 28),
+      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
         color: const Color(0xCC415A77),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            spreadRadius: 2,
+            blurRadius: 8,
+          ),
+        ],
+        // color: const Color(0xCC415A77), // A deeper blue color for a modern feel
+        // borderRadius: BorderRadius.circular(20), // Rounded corners for a sleek design
+        // boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), spreadRadius: 2, blurRadius: 8)],
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFDADBDD)),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search for consulting services...',
-                  hintStyle: TextStyle(
-                    color: Color(0xFF1B263B),
-                    fontSize: 11,
-                    fontFamily: 'Inter',
+      padding: EdgeInsets.symmetric(vertical: 30, horizontal: 30),
+      child: Column(
+        children: [
+          SizedBox(height: 20), // Adjusted space between text and search bar
+
+          // Search Bar Container
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 6, spreadRadius: 2)],
+            ),
+            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search for any service...',
+                      hintStyle: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF415A77),
+                      ),
+                      border: InputBorder.none,
+                    ),
+                    onSubmitted: (_) => _performSearch(), // Trigger search on submit
                   ),
-                  border: InputBorder.none,
                 ),
-                onSubmitted: (_) => _performSearch(),
-              ),
+                IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: _performSearch,
+                  color: Colors.black,
+                ),
+              ],
             ),
-            IconButton(
-              icon: Icon(Icons.search),
-              onPressed: _performSearch,
-              color: Color(0xFF1B263B),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+
 
   Widget _buildJobList() {
     return StreamBuilder<List<Job>>(
@@ -217,12 +300,20 @@ class _SearchScreenState extends State<SearchScreen> {
           return const Center(child: Text('No results for your search.'));
         }
 
+        // Pagination logic
+        final startIndex = (_currentPage - 1) * _jobsPerPage;
+        final endIndex = startIndex + _jobsPerPage;
+        final paginatedJobs = filteredJobs.sublist(
+          startIndex,
+          endIndex > filteredJobs.length ? filteredJobs.length : endIndex,
+        );
+
         return ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: filteredJobs.length,
+          itemCount: paginatedJobs.length,
           itemBuilder: (context, index) {
-            final job = filteredJobs[index];
+            final job = paginatedJobs[index];
             return _buildJobCard(job);
           },
         );
@@ -233,109 +324,317 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildJobCard(Job job) {
     bool isUserCreator = loggedInUser == job.createdBy;
 
-    return GestureDetector(
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (context) =>
-              AlertDialog(
-                title: Text(job.title),
-                content: SingleChildScrollView(
-                  child: ListBody(
+    return Card(
+      elevation: 6,
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Container(
+        height: 180,
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16.0),
+          color: const Color(0xFF0D1B2A), // Card background color
+        ),
+        child: Row(
+          children: [
+            // Left section with profile image
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: Colors.white,
+              backgroundImage: userProfileImageUrl != null
+                  ? NetworkImage(userProfileImageUrl!) // Use the profile image URL if available
+                  : const AssetImage('assets/default_profile_image.png') as ImageProvider, // Fallback to a default image if no profile image
+              child: userProfileImageUrl == null
+                  ? const Icon(
+                Icons.person,
+                color: Colors.black,
+                size: 30,
+              )
+                  : null, // Show icon only if there's no profile image
+            ),
+            const SizedBox(width: 16),
+
+            // Right section with job details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Job Title
+                  Center(
+                    child: Text(
+                      job.title,
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Offering/Seeking and Created By
+                  Text(
+                    job.offering ? 'Offering' : 'Seeking',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Created By: ${job.createdBy}',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Second section with hourly rate and "+" icon
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Created By: ${job.createdBy}'),
-                      Text('Description: ${job.description}'),
-                      Text('Hourly Rate: \$${job.hourlyRate}/hr'),
-                      Text(job.offering ? 'Offering' : 'Seeking'),
+                      // Left side: Hourly Rate
+                      Text(
+                        '\$${job.hourlyRate}/hr',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      // Right side: "+" icon to show details
+                      IconButton(
+                        icon: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => _buildJobDetailsDialog(
+                              context,
+                              job,
+                              isUserCreator,
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildJobDetailsDialog(BuildContext context, Job job, bool isUserCreator) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(20.0),
+        height: 350, // Increased height for better text positioning
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16.0),
+          color: Colors.white, // Set the background to white
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Text(
+                job.title,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
-                actions: [
+              ),
+            ),
+            const SizedBox(height: 15),
+            Text(
+              'Created By: ${job.createdBy}',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black87,
+                fontWeight: FontWeight.w500, // Slightly bold for better emphasis
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Description: ${job.description}',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black54, // Lighter color for description
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Hourly Rate: \$${job.hourlyRate}/hr',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black87,
+                fontWeight: FontWeight.w500, // Bold for rate
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              job.offering ? 'Offering' : 'Seeking',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.blueAccent, // Blue color for offering/Seeking
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Button to Edit Job - Only shown for creator
+                if (isUserCreator)
                   TextButton(
-                    child: const Text('Close'),
+                    child: const Text(
+                      'Edit',
+                      style: TextStyle(
+                        color: Colors.white, // White text on red background
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => EditJobScreen(job: job)));
+                    },
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.orange, // Red background for Edit
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                // Button to View Applicants - Only shown for creator
+                if (isUserCreator)
+                  TextButton(
+                    child: const Text(
+                      'View Applicants',
+                      style: TextStyle(
+                        color: Colors.white, // White text on green background
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    onPressed: () async {
+                      final applicationService = ApplicationService();
+                      final applications = await applicationService.fetchApplications(job.jobId);
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return ApplicantListScreen(
+                              jobTitle: job.title,
+                              applications: applications,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.green, // Green background for View Applicants
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                // Button to Apply - Only shown for non-creator
+                if (!isUserCreator)
+                  TextButton(
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(
+                        color: Colors.white, // White text on red background
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                  ),
-                  if (isUserCreator)
-                    TextButton(
-                      child: const Text('View Applicants'),
-                      onPressed: () async {
-                        final applicationService = ApplicationService();
-                        final applications = await applicationService
-                            .fetchApplications(job.jobId);
-
-                       // Navigator.of(context).pop();
-                        // Navigate to a new screen to show the list of applicants
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              print("Navigating to ApplicantListScreen");
-                              return ApplicantListScreen(
-                                jobTitle: job.title,
-                                applications: applications,
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    )
-                  else
-                    TextButton(
-                      child: const Text('Apply'),
-                      onPressed: () async {
-                        final applicationService = ApplicationService();
-                        await applicationService.applyForJob(
-                            job.jobId, job.createdBy!);
-
-                        Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('You have applied for the job.')),
-                        );
-                      },
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.red, // Red background for Edit
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                ],
-              ),
-        );
-      },
-      child: Card(
-        elevation: 4,
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
+                  ),
+                if (!isUserCreator)
+                  TextButton(
+                    child: const Text(
+                      'Apply',
+                      style: TextStyle(
+                        color: Colors.white, // White text on blue background
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    onPressed: () async {
+                      final applicationService = ApplicationService();
+                      await applicationService.applyForJob(job.jobId, job.createdBy!);
+
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('You have applied for the job.')),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.blue, // Blue background for Apply
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ),
-        child: Container(
-          height: 150,
-          padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16.0),
-            color: Colors.white,
+      ),
+    );
+  }
+
+
+
+
+  Widget _buildPagination() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _currentPage > 1 ? _previousPage : null,
+            // Disable when on first page
+            color: _currentPage > 1 ? Colors.black : Colors.grey,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                job.offering ? 'Offering' : 'Seeking',
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                job.title,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          Text('Page $_currentPage'),
+          IconButton(
+            icon: const Icon(Icons.arrow_forward),
+            onPressed: _currentPage < (_totalJobs / _jobsPerPage).ceil()
+                ? _nextPage
+                : null, // Disable when on last page
+            color: _currentPage < (_totalJobs / _jobsPerPage).ceil()
+                ? Colors.black
+                : Colors.grey,
           ),
-        ),
+        ],
       ),
     );
   }

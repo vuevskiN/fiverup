@@ -2,10 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fiverup/main/main_page.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../profile/add/profile_creation.dart';
-
-
 
 class FormContainerPage extends StatelessWidget {
   @override
@@ -13,186 +12,177 @@ class FormContainerPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sign In'),
-        backgroundColor: const Color(0xFF2C2C2C),
+        backgroundColor: const  Color(0xFF0D1B2A),
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
-        child: Center(
-          child: FormContainer(),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(
+            child: FormContainer(),
+          ),
         ),
       ),
-      backgroundColor: const Color(0xFFF5F5F5), // Optional background color
     );
   }
 }
 
-  class FormContainer extends StatelessWidget {
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController passwordController = TextEditingController();
-    Future<bool> _checkProfileExists(String email) async {
-      final FirebaseFirestore firestore = FirebaseFirestore.instance;
-      final QuerySnapshot querySnapshot = await firestore
-          .collection('profiles')
-          .where('email', isEqualTo: email)
-          .get();
+class FormContainer extends StatelessWidget {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
-      return querySnapshot.docs.isNotEmpty;
-    }
+  Future<bool> _checkProfileExists(String email) async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final QuerySnapshot querySnapshot = await firestore
+        .collection('profiles')
+        .where('email', isEqualTo: email)
+        .get();
+
+    return querySnapshot.docs.isNotEmpty;
+  }
+
   // Function to sign in the user with Firebase
-    Future<void> _signInUser(BuildContext context) async {
-      try {
-        print("Sign-In button clicked");
-        final FirebaseAuth auth = FirebaseAuth.instance;
-        final UserCredential userCredential = await auth.signInWithEmailAndPassword(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
+  Future<void> _signInUser(BuildContext context) async {
+    try {
+      print("Sign-In button clicked");
+      final FirebaseAuth auth = FirebaseAuth.instance;
+      final UserCredential userCredential = await auth.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+      print("User signed in: ${userCredential.user?.email}");
+
+      final String email = userCredential.user!.email!;
+      final bool profileExists = await _checkProfileExists(email);
+
+      if (profileExists) {
+        final String profileId = await _getProfileId(email);  // Fetch profile ID
+        print("PROFILE ID FROM LOGIN SCREEN: $profileId");
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(profileId: profileId), // Pass profileId here
+          ),
         );
-        print("User signed in: ${userCredential.user?.email}");
-
-        final String email = userCredential.user!.email!;
-        final bool profileExists = await _checkProfileExists(email);
-
-        if (profileExists) {
-          final String profileId = await _getProfileId(email);  // Fetch profile ID
-          print("PROFILE ID FROM LOGIN SCREEN: $profileId");
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HomePage(profileId: profileId), // Pass profileId here
-            ),
-          );
-        } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => ProfileCreationPage(email: email)),
-          );
-        }
-      } on FirebaseAuthException catch (e) {
-        print("FirebaseAuthException: ${e.message}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'An error occurred')),
-        );
-      }
-    }
-
-    Future<String> _getProfileId(String email) async {
-      final FirebaseFirestore firestore = FirebaseFirestore.instance;
-      final QuerySnapshot querySnapshot = await firestore
-          .collection('profiles')
-          .where('email', isEqualTo: email)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        return querySnapshot.docs.first.id;  // Return the profile ID
       } else {
-        throw Exception("Profile not found");
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ProfileCreationPage(email: email)),
+        );
       }
+    } on FirebaseAuthException catch (e) {
+      print("FirebaseAuthException: ${e.message}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'An error occurred')),
+      );
     }
+  }
 
+  Future<String> _getProfileId(String email) async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final QuerySnapshot querySnapshot = await firestore
+        .collection('profiles')
+        .where('email', isEqualTo: email)
+        .get();
 
+    if (querySnapshot.docs.isNotEmpty) {
+      return querySnapshot.docs.first.id;  // Return the profile ID
+    } else {
+      throw Exception("Profile not found");
+    }
+  }
 
-    @override
+  @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(24),
+      constraints: const BoxConstraints(maxWidth: 320),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Color(0xFFD9D9D9)),
+        border: Border.all(color: const Color(0xFFD9D9D9)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          EmailInput(controller: emailController),
-          SizedBox(height: 24),
-          PasswordInput(controller: passwordController),
-          SizedBox(height: 24),
-          SignInButton(onPressed: () => _signInUser(context)),
-        ],
-      ),
-    );
-  }
-}
-
-class SignInButton extends StatelessWidget {
-  final VoidCallback onPressed;
-
-  const SignInButton({required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.all(12),
-          backgroundColor: Color(0xFF2C2C2C),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+      child: Form(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildFormField(
+              label: 'Email',
+              hintText: 'Enter your email',
+              controller: emailController,
+              textInputType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 24),
+            _buildFormField(
+              label: 'Password',
+              hintText: 'Enter your password',
+              controller: passwordController,
+              obscureText: true,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _signInUser(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2C2C2C),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Sign In',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-        onPressed: onPressed,
-        child: Text('Sign In'),
       ),
     );
   }
-}
 
-class PasswordInput extends StatelessWidget {
-  final TextEditingController controller;
-
-  const PasswordInput({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildFormField({
+    required String label,
+    required String hintText,
+    required TextEditingController controller,
+    bool obscureText = false,
+    TextInputType? textInputType,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Password',
-          style: TextStyle(color: Color(0xFF000000)),
-        ),
-        SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          decoration: InputDecoration(
-            contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            hintText: 'Value',
-            hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
+          label,
+          style: const TextStyle(
+            color: Colors.black,
+            height: 1.4,
           ),
-          obscureText: true,
         ),
-      ],
-    );
-  }
-}
-
-class EmailInput extends StatelessWidget {
-  final TextEditingController controller;
-
-  const EmailInput({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Email',
-          style: TextStyle(color: Color(0xFF000000)),
-        ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         TextFormField(
           controller: controller,
+          obscureText: obscureText,
+          keyboardType: textInputType,
           decoration: InputDecoration(
-            contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            hintText: hintText,
+            hintStyle: const TextStyle(
+              color: Color(0xFF6B7280),
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(
+                color: Color(0xFFD9D9D9),
+              ),
             ),
-            hintText: 'Value',
-            hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
         ),
       ],

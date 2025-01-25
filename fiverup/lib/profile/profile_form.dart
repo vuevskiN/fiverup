@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import '../job/personal_jobs/my_offers.dart';
-import '../job/personal_jobs/my_seeking.dart';
 import '../main/main_page.dart';
-import '../models/profile.dart';
+import '../models/profile.dart'; // Import Profile model
+import '../service/profileImg_service.dart';
 import '../service/profile_service.dart';
 
 class ProfileForm extends StatefulWidget {
   final Profile profile;
   final String profileId;
 
-  const ProfileForm({super.key, required this.profile, required this.profileId});
+  const ProfileForm({Key? key, required this.profile, required this.profileId})
+      : super(key: key);
 
   @override
   _ProfileFormState createState() => _ProfileFormState();
@@ -21,14 +21,16 @@ class _ProfileFormState extends State<ProfileForm> {
   late TextEditingController _professionController;
   late TextEditingController _aboutController;
   final ProfileService _profileService = ProfileService();
+  final ImageService _imageService = ImageService(); // Initialize ImageService
+  String? _selectedIcon;
 
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with current profile data
     _nameController = TextEditingController(text: widget.profile.name);
     _professionController = TextEditingController(text: widget.profile.profession);
     _aboutController = TextEditingController(text: widget.profile.about);
+    _selectedIcon = widget.profile.avatarUrl; // Set initial icon if any
   }
 
   @override
@@ -39,184 +41,189 @@ class _ProfileFormState extends State<ProfileForm> {
     super.dispose();
   }
 
+  // Update the profile with the selected image icon
   Future<void> _updateProfile() async {
     if (_formKey.currentState!.validate()) {
-      // Create an updated Profile object
       final updatedProfile = Profile(
         id: widget.profile.id,
         name: _nameController.text.trim(),
         profession: _professionController.text.trim(),
         about: _aboutController.text.trim(),
         imageUrl: widget.profile.imageUrl,
-        avatarUrl: widget.profile.avatarUrl,
+        avatarUrl: _selectedIcon ?? widget.profile.avatarUrl, // Use selected icon
       );
 
-      // Call the updateProfile method in ProfileService
       await _profileService.updateProfile(widget.profile.id, updatedProfile);
 
-      // Show a success message
+      // Update image icon if selected
+      if (_selectedIcon != null) {
+        await _imageService.updateProfileImageIcon(widget.profile.id, _selectedIcon!);
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile updated successfully')),
       );
 
-      // Navigate to another page after success
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => HomePage(profileId: widget.profileId), // Replace with your target page
+          builder: (context) => HomePage(profileId: widget.profileId),
         ),
       );
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.only(top: 46),
-      width: 383,
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              ElevatedButton(
-                onPressed: () {}, // Add functionality if needed
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2C2C2C),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text('Edit Profile'),
+  // Image selection function
+  Future<void> _selectImage() async {
+    // This can be replaced with an image picker or dropdown for selecting icons
+    final newIcon = await _showIconPickerDialog();
+    if (newIcon != null) {
+      setState(() {
+        _selectedIcon = newIcon;
+      });
+    }
+  }
+
+  Future<String?> _showIconPickerDialog() async {
+    // Example of an icon selection dialog
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Select an Icon'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                title: const Text('Icon 1'),
+                onTap: () => Navigator.pop(context, 'icon1.png'),
               ),
-              const SizedBox(width: 12),
-              OutlinedButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => MyJobsPage()));
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  side: const BorderSide(color: Color(0xFF2C2C2C)),
-                ),
-                child: const Text('My Jobs'),
+              ListTile(
+                title: const Text('Icon 2'),
+                onTap: () => Navigator.pop(context, 'icon2.png'),
               ),
-              const SizedBox(width: 12),
-              OutlinedButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => MyOffersPage()));
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  side: const BorderSide(color: Color(0xFF2C2C2C)),
-                ),
-                child: const Text('My Offers'),
+              ListTile(
+                title: const Text('Icon 3'),
+                onTap: () => Navigator.pop(context, 'icon3.png'),
               ),
             ],
           ),
-          Container(
-            margin: const EdgeInsets.only(top: 19),
-            padding: const EdgeInsets.all(14),
-            width: 219,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Name'),
-                  const SizedBox(height: 9),
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Name is required';
-                      }
-                      if (value.trim().length < 3) {
-                        return 'Name must be at least 3 characters';
-                      }
-                      if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
-                        return 'Name must only contain letters and spaces';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 15),
-                  const Text('Profession'),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: _professionController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Profession is required';
-                      }
-                      if (value.trim().length < 3) {
-                        return 'Profession must be at least 3 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 15),
-                  const Text('About'),
-                  const SizedBox(height: 11),
-                  TextFormField(
-                    controller: _aboutController,
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'About is required';
-                      }
-                      if (value.trim().length < 10) {
-                        return 'About section must be at least 10 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _updateProfile,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE5A000),
-                        minimumSize: const Size(72, 28),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          side: const BorderSide(color: Color(0xFFBF6A02)),
-                        ),
-                      ),
-                      child: const Text('Update'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
         ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Name',
+                labelStyle: const TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Name is required';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _professionController,
+              decoration: InputDecoration(
+                labelText: 'Profession',
+                labelStyle: const TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Profession is required';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _aboutController,
+              maxLines: 4,
+              decoration: InputDecoration(
+                labelText: 'About',
+                labelStyle: const TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'About is required';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _selectImage, // Trigger image selection
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                backgroundColor: const Color(0xFF2C2C2C),
+                minimumSize: const Size(100, 48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Select Image',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _updateProfile,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                backgroundColor: const Color(0xFF2C2C2C),
+                minimumSize: const Size(100, 48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Update Profile',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

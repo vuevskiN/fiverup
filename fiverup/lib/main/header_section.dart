@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../login/form_container.dart';
 import '../notification_screen/botification_screen.dart';
 import '../profile/profile_screen.dart';
-import '../register/widgets/signup_form.dart';
 
 class HeaderSection extends StatelessWidget {
   final String profileId;
@@ -15,12 +14,11 @@ class HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Color(0x0D1B2A),
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      color: const Color(0xFF0D1B2A), // Dark background similar to AppHeader design
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Profile Icon
           GestureDetector(
             onTap: () {
               if (profileId.isEmpty) {
@@ -29,7 +27,6 @@ class HeaderSection extends StatelessWidget {
                 );
                 return;
               }
-
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -37,85 +34,79 @@ class HeaderSection extends StatelessWidget {
                 ),
               );
             },
-            child: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, size: 24, color: Colors.black),
+            child: _buildCircularButton(Icons.person), // Profile button using Icon
+          ),
+          Expanded(
+            child: Container(
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFE0E1DD)), // Matching border style
+              ),
+              child: const Text(
+                'FiverUP',
+                style: TextStyle(
+                  color: Color(0xFFE0E1DD), // Light text color
+                  fontSize: 22,
+                  fontFamily: 'Playfair Display',
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.66,
+                ),
+              ),
             ),
           ),
-          Text(
-            'FiverUP',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFFE0E1DD),
-              letterSpacing: 0.66,
-            ),
-          ),
-          // Notifications Icon
-          StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('notifications')
-                .where('receiverEmail', isEqualTo: profileId)
-                .where('isRead', isEqualTo: false) // filter unread notifications
-                .snapshots(),
-            builder: (context, snapshot) {
-              Color bellColor = Colors.black;
-              if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-                bellColor = Colors.red; // Unread notifications, turn bell red
-              }
-
-              return IconButton(
-                icon: Icon(Icons.notifications, color: bellColor),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => NotificationsScreen(),
-                    ),
+          Row(
+            children: [
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('notifications')
+                    .where('receiverEmail', isEqualTo: profileId)
+                    .where('isRead', isEqualTo: false)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  Color bellColor = Colors.white;
+                  if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                    bellColor = Colors.red; // Unread notifications
+                  }
+                  return IconButton(
+                    icon: Icon(Icons.notifications, color: bellColor),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NotificationsScreen(),
+                        ),
+                      );
+                    },
                   );
                 },
-              );
-            },
-          ),
-
-          // Dropdown Menu with Sign Out and Notifications
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: Colors.black),
-            onSelected: (String value) {
-              if (value == 'notifications') {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Notifications coming soon!')),
-                );
-              } else if (value == 'signOut') {
-                _showSignOutDialog(context);
-              }
-            },
-            itemBuilder: (BuildContext context) {
-              return [
-                PopupMenuItem<String>(
-                  value: 'notifications',
-                  child: Row(
-                    children: [
-                      Icon(Icons.notifications, size: 24),
-                      SizedBox(width: 8),
-                      Text('Notifications'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'signOut',
-                  child: Row(
-                    children: [
-                      Icon(Icons.exit_to_app, size: 24),
-                      SizedBox(width: 8),
-                      Text('Sign Out'),
-                    ],
-                  ),
-                ),
-              ];
-            },
+              ),
+              IconButton(
+                icon: Icon(Icons.exit_to_app, color: Colors.white),
+                onPressed: () {
+                  _showSignOutDialog(context);
+                },
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCircularButton(IconData icon) {
+    return SizedBox(
+      width: 48,
+      height: 48,
+      child: Center(
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white, // Circular button with a white background
+          ),
+          child: Icon(icon, size: 24, color: const Color(0xFF415A77)), // Icon color adjusted to match the scheme
+        ),
       ),
     );
   }

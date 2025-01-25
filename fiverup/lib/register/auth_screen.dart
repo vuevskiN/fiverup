@@ -15,20 +15,9 @@ class AuthScreen extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 174),
           child: Column(
             children: [
-              const AuthHeader(),
+               AuthHeader(),
               const SizedBox(height: 110),
               const SignupForm(),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => FormContainerPage()),
-                  );
-                },
-                child: const Center(
-                  child: Text("Already have an account? Log In"),
-                ),
-              ),
-
             ],
           ),
         ),

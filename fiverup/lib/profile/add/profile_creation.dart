@@ -50,7 +50,8 @@ class ProfileCreationPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Create Profile'),
-        backgroundColor: const Color(0xFF2C2C2C),
+        backgroundColor: const Color(0xFF0D1B2A),
+        foregroundColor: Colors.white,
       ),
       body: Padding(
         padding: EdgeInsets.all(24),
@@ -98,6 +99,7 @@ class ProfileCreationPage extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   backgroundColor: Color(0xFF2C2C2C),
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),

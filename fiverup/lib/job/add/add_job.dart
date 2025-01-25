@@ -150,87 +150,97 @@ class _AddJobScreenState extends State<AddJobScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFF0D1B2A), // AppBar color
+        foregroundColor: Colors.white, // AppBar text color
         title: Text(widget.jobToEdit != null ? 'Edit Job' : 'Add Job'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Job Title'),
-                validator: (value) =>
-                value == null || value.trim().isEmpty ? 'Enter a job title' : null,
-              ),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Job Description'),
-                validator: (value) =>
-                value == null || value.trim().isEmpty ? 'Enter a job description' : null,
-              ),
-              TextFormField(
-                controller: _hourlyRateController,
-                decoration: const InputDecoration(labelText: 'Hourly Rate'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  final rate = double.tryParse(value ?? '');
-                  if (rate == null || rate <= 0) {
-                    return 'Enter a valid hourly rate';
-                  }
-                  return null;
-                },
-              ),
+              // Job Title Field
+              _buildTextField(_titleController, 'Job Title'),
+
+              // Job Description Field
+              _buildTextField(_descriptionController, 'Job Description'),
+
+              // Hourly Rate Field
+              _buildTextField(_hourlyRateController, 'Hourly Rate', isNumber: true),
+
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Offering:'),
-                  Switch(
-                    value: _isOffering,
-                    onChanged: _onOfferingChanged,
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Seeking:'),
-                  Switch(
-                    value: _isSeeking,
-                    onChanged: _onSeekingChanged,
-                  ),
-                ],
-              ),
+
+              // Offering Toggle
+              _buildSwitchRow('Offering:', _isOffering, _onOfferingChanged),
+
+              // Seeking Toggle
+              _buildSwitchRow('Seeking:', _isSeeking, _onSeekingChanged),
+
               const SizedBox(height: 16),
+
+              // Due Date Field
               Row(
                 children: [
-                  const Text('Due Date:'),
+                  const Text('Due Date:', style: TextStyle(fontSize: 16)),
                   TextButton(
                     onPressed: _pickDueDate,
                     child: Text(
                       _dueDate == null
                           ? 'Select Date'
                           : DateFormat('yyyy-MM-dd').format(_dueDate!),
+                      style: TextStyle(color: Theme.of(context).primaryColor),
                     ),
                   ),
                 ],
               ),
-              ElevatedButton(
-                onPressed: _addOrUpdateJob,
-                child: Text(widget.jobToEdit != null ? 'Update Job' : 'Add Job'),
+
+              const SizedBox(height: 20),
+
+              // Submit Button
+              Center(
+                child: ElevatedButton(
+                  onPressed: _addOrUpdateJob,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0D1B2A),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  ),
+                  child: Text(
+                    widget.jobToEdit != null ? 'Update Job' : 'Add Job',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  // Helper method to build text fields
+  Widget _buildTextField(TextEditingController controller, String label, {bool isNumber = false}) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(labelText: label),
+      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      validator: (value) => value == null || value.trim().isEmpty ? 'Enter a $label' : null,
+    );
+  }
+
+  // Helper method to build switch rows
+  Widget _buildSwitchRow(String label, bool value, Function(bool) onChanged) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16)),
+        Switch(value: value, onChanged: onChanged),
+      ],
     );
   }
 }

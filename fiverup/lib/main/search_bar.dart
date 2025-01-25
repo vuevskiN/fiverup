@@ -22,19 +22,20 @@ class _PromoSectionState extends State<PromoSection> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
-        color: Color(0xFF415A77),
-        borderRadius: BorderRadius.circular(15),
+          color: const Color(0xCC415A77),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), spreadRadius: 2, blurRadius: 8)],
       ),
-      padding: EdgeInsets.symmetric(vertical: 30, horizontal: 40),
-      margin: EdgeInsets.only(top: 100),
+      padding: EdgeInsets.symmetric(vertical: 30, horizontal: 30),
       child: Column(
         children: [
           Text(
             'Scale your professional',
             style: TextStyle(
               fontSize: 24,
-              color: Colors.white,
+              color: Color(0xFFE0E1DD),
               letterSpacing: -0.42,
               fontWeight: FontWeight.bold,
             ),
@@ -46,7 +47,7 @@ class _PromoSectionState extends State<PromoSection> {
               Text(
                 'workforce with',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   color: Colors.white,
                   letterSpacing: -0.42,
                   fontWeight: FontWeight.bold,
@@ -54,11 +55,11 @@ class _PromoSectionState extends State<PromoSection> {
               ),
               SizedBox(width: 8),
               Text(
-                'freelancers',
+                'FiverUp',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: Colors.amberAccent,
                   letterSpacing: -0.54,
                 ),
               ),
@@ -68,10 +69,10 @@ class _PromoSectionState extends State<PromoSection> {
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.black12),
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 6, spreadRadius: 2)],
             ),
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12), // Reduced padding for a thinner search bar
             child: Row(
               children: [
                 Expanded(
@@ -80,7 +81,7 @@ class _PromoSectionState extends State<PromoSection> {
                     decoration: InputDecoration(
                       hintText: 'Search for any service...',
                       hintStyle: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14, // Smaller font size for hint text
                         color: Color(0xFF1B263B),
                       ),
                       border: InputBorder.none,

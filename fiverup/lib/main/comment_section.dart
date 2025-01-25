@@ -20,10 +20,9 @@ class _CommentSectionState extends State<CommentSection> {
   @override
   void initState() {
     super.initState();
-    _userEmails = fetchUserEmails();  // Fetch user emails using the updated service
+    _userEmails = fetchUserEmails(); // Fetch user emails using the updated service
   }
 
-  // Function to submit the comment to Firestore
   void _submitComment() async {
     if (_selectedUserEmail == null || _commentController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -33,83 +32,99 @@ class _CommentSectionState extends State<CommentSection> {
     }
 
     try {
-      // Submit the comment to Firestore under the 'comments' collection
       await FirebaseFirestore.instance.collection('comments').add({
-        'userEmail': _selectedUserEmail,
         'comment': _commentController.text,
+        'userEmail': _selectedUserEmail,
         'timestamp': FieldValue.serverTimestamp(),
       });
-
-      // Clear the text field after submitting
-      _commentController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Comment submitted successfully!')));
+      setState(() {
+        _commentController.clear();
+      });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting comment')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<String>>(
-      future: _userEmails,  // Fetch emails list from the service
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 24), // Added margins for the card
+      decoration: BoxDecoration(
+        color: Color(0xFFF3F3F3), // Light background for the comment section
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, spreadRadius: 2)], // Soft shadow for depth
+      ),
+      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      child: Column(
+        children: [
+          Text(
+            'User Comments',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          SizedBox(height: 12),
+          FutureBuilder<List<String>>(
+            future: _userEmails,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator();
+              }
 
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Text('No users available');
+              }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('No users found.'));
-        }
-
-        final userEmails = snapshot.data!;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: DropdownButton<String>(
+              return DropdownButton<String>(
                 value: _selectedUserEmail,
-                hint: Text('Select a user'),
+                hint: Text('Select user'),
                 isExpanded: true,
-                onChanged: (String? newValue) {
+                onChanged: (newValue) {
                   setState(() {
                     _selectedUserEmail = newValue;
                   });
                 },
-                items: userEmails.map<DropdownMenuItem<String>>((email) {
-                  return DropdownMenuItem<String>(
+                items: snapshot.data!
+                    .map<DropdownMenuItem<String>>(
+                      (email) => DropdownMenuItem<String>(
                     value: email,
                     child: Text(email),
-                  );
-                }).toList(),
+                  ),
+                )
+                    .toList(),
+              );
+            },
+          ),
+          SizedBox(height: 12),
+          TextField(
+            controller: _commentController,
+            decoration: InputDecoration(
+              hintText: 'Write a comment...',
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
               ),
+              contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12), // Smaller padding
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: TextField(
-                controller: _commentController,
-                decoration: InputDecoration(
-                  labelText: 'Leave a comment',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 5,
-              ),
+            maxLines: 3, // Make the text field smaller by limiting the lines
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _submitComment,
+            child: Text('Submit Comment'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF0D1B2A),
+              foregroundColor: Colors.white,// Consistent color scheme
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: ElevatedButton(
-                onPressed: _submitComment,
-                child: Text('Submit Comment'),
-              ),
-            ),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
     );
   }
 }

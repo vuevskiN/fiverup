@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:google_fonts/google_fonts.dart'; // For modern fonts
 import '../filter/search_screen.dart';
 
 // 1. Create the Popular model
@@ -16,27 +16,27 @@ class PopularService {
     return [
       Popular(
         name: 'Software Developer',
-        icon: Icons.computer, // Using the computer icon for Software Developer
+        icon: Icons.computer,
       ),
       Popular(
         name: 'Graphic Designer',
-        icon: Icons.design_services, // Using the design services icon for Graphic Designer
+        icon: Icons.design_services,
       ),
       Popular(
         name: 'Music Producer',
-        icon: Icons.music_note, // Using the music note icon for Music Producer
+        icon: Icons.music_note,
       ),
       Popular(
         name: 'Content Writer',
-        icon: Icons.create, // Using the create icon for Content Writer
+        icon: Icons.create,
       ),
       Popular(
         name: 'Data Analyst',
-        icon: Icons.analytics, // Using the analytics icon for Data Analyst
+        icon: Icons.analytics,
       ),
       Popular(
         name: 'Consultant',
-        icon: Icons.business, // Using the business icon for Consultant
+        icon: Icons.business,
       ),
     ];
   }
@@ -51,29 +51,35 @@ class PopularSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 61),
+            padding: const EdgeInsets.only(top: 20),
             child: Text(
               'Popular Job Seekers/Offerings',
-              style: TextStyle(
-                fontSize: 26,
+              style: GoogleFonts.poppins(
+                fontSize: 22, // Adjusted to fit into one line
                 fontWeight: FontWeight.bold,
-                color: Color(0x40414569),
-                letterSpacing: -0.9,
+                color: Colors.black87,
+                letterSpacing: -0.5,
               ),
             ),
           ),
-          SizedBox(height: 20),
-          Container(
-            height: 150, // Height of the popular row
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: popularItems.length,
-              itemBuilder: (context, index) {
-                return PopularTile(popular: popularItems[index]);
-              },
+          SizedBox(height: 16),
+          // Use GridView to display cards in 3 columns and 2 rows
+          GridView.builder(
+            shrinkWrap: true, // To prevent GridView from taking unnecessary space
+            physics: NeverScrollableScrollPhysics(), // Prevent scrolling within the GridView
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3, // 3 cards in one row
+              crossAxisSpacing: 12, // Space between cards horizontally
+              mainAxisSpacing: 12, // Space between cards vertically
+              childAspectRatio: 0.65, // Adjust the aspect ratio for smaller card size
             ),
+            itemCount: 6, // Limit to 6 items for 2 rows of 3 cards each
+            itemBuilder: (context, index) {
+              return PopularTile(popular: popularItems[index]);
+            },
           ),
         ],
       ),
@@ -81,7 +87,6 @@ class PopularSection extends StatelessWidget {
   }
 }
 
-// 3. Tile widget to display each popular item
 // 3. Tile widget to display each popular item
 class PopularTile extends StatelessWidget {
   final Popular popular;
@@ -101,29 +106,36 @@ class PopularTile extends StatelessWidget {
         );
       },
       child: Container(
-        width: 120,
-        margin: EdgeInsets.only(right: 16), // Space between tiles
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)],
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 6, offset: Offset(0, 2))
+          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              popular.icon,
-              size: 50, // Set icon size
-              color: Colors.black,
+            Container(
+              padding: EdgeInsets.all(8), // Reduced padding for smaller size
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                popular.icon,
+                size: 35, // Further reduced icon size for a smaller card
+                color: Colors.blue,
+              ),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 8), // Reduced space between icon and text
             Text(
               popular.name,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0x22232325),
+              style: GoogleFonts.poppins(
+                fontSize: 12, // Smaller font size
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
               ),
             ),
           ],
@@ -132,4 +144,3 @@ class PopularTile extends StatelessWidget {
     );
   }
 }
-
