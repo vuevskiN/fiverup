@@ -190,22 +190,7 @@ class _ProfileFormState extends State<ProfileForm> {
                 return null;
               },
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _selectImage, // Trigger image selection
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                backgroundColor: const Color(0xFF2C2C2C),
-                minimumSize: const Size(100, 48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'Select Image',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
+            
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _updateProfile,

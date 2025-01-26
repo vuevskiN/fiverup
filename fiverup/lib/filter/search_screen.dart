@@ -155,19 +155,6 @@ class _SearchScreenState extends State<SearchScreen> {
               _buildAppBar(context),
               _buildSearchBar(),
               _buildJobList(),
-              // Button to trigger date picker
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  onPressed: () => fetchAndPrintAllImages(),
-                  child: Text(
-                    _selectedDate == null
-                        ? 'Pick a Date'
-                        : 'Selected Date: ${_selectedDate!.toLocal()}'.split(
-                        ' ')[0],
-                  ),
-                ),
-              ),
               _buildPagination(),
             ],
           ),
