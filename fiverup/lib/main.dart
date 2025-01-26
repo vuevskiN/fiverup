@@ -1,3 +1,4 @@
+import 'package:fiverup/logo/welcome_screen.dart';
 import 'package:fiverup/register/auth_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: AuthScreen(), // You can change this to ProfileScreen when needed
+      home: WelcomeScreen(), // You can change this to ProfileScreen when needed
     );
   }
 }

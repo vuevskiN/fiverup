@@ -3,33 +3,50 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ImageService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Collection reference for images
   CollectionReference imagesCollection = FirebaseFirestore.instance.collection('images');
 
-  // Fetch the profile image icon for a specific user
+
   Future<String?> getUserProfileImage(String userId) async {
     try {
-      // Fetch the profile image icon based on the userId (name)
-      QuerySnapshot snapshot = await imagesCollection.where('userId', isEqualTo: userId).get();
-      if (snapshot.docs.isNotEmpty) {
-        return snapshot.docs.first['icon']; // Return the icon name (string)
+      // Fetch profile based on userId
+      var profileSnapshot = await _firestore
+          .collection('profiles')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      if (profileSnapshot.docs.isNotEmpty) {
+        var profileDoc = profileSnapshot.docs.first;
+        // Assuming the profile document contains an 'imageUrl' field
+        return profileDoc['imageUrl']; // Return image URL if exists
       }
     } catch (e) {
       print("Error fetching profile image: $e");
     }
-    return null;
+    return null; // Return null if no profile or image is found
   }
 
-  // Update the profile image icon in Firestore for a specific user
+  Future<void> printAllImages() async {
+    try {
+      QuerySnapshot snapshot = await imagesCollection.get();
+
+      if (snapshot.docs.isNotEmpty) {
+        for (var doc in snapshot.docs) {
+          print("Document ID: ${doc.id}, Data: ${doc.data()}");
+        }
+      } else {
+        print("No documents found in the images collection.");
+      }
+    } catch (e) {
+      print("Error fetching all images: $e");
+    }
+  }
+
   Future<void> updateProfileImageIcon(String userId, String iconName) async {
     try {
-      // Update the user's profile image icon in Firestore
       QuerySnapshot snapshot = await imagesCollection.where('userId', isEqualTo: userId).get();
       if (snapshot.docs.isNotEmpty) {
-        // Update the document if it exists
         await snapshot.docs.first.reference.update({'icon': iconName});
       } else {
-        // If no document exists, create a new one
         await imagesCollection.add({
           'userId': userId,
           'icon': iconName,

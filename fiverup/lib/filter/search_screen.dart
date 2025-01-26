@@ -128,6 +128,12 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  void fetchAndPrintAllImages() async {
+    ImageService imageService = ImageService();
+    await imageService.printAllImages();
+  }
+
+
   // Method to handle previous page navigation
   void _previousPage() {
     setState(() {
@@ -153,7 +159,7 @@ class _SearchScreenState extends State<SearchScreen> {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: ElevatedButton(
-                  onPressed: () => _selectDate(context),
+                  onPressed: () => fetchAndPrintAllImages(),
                   child: Text(
                     _selectedDate == null
                         ? 'Pick a Date'
@@ -339,20 +345,58 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
         child: Row(
           children: [
-            // Left section with profile image
-            CircleAvatar(
+            // Left section with profile image or icon
+            job.createdBy == null
+                ? const CircleAvatar(
               radius: 30,
               backgroundColor: Colors.white,
-              backgroundImage: userProfileImageUrl != null
-                  ? NetworkImage(userProfileImageUrl!) // Use the profile image URL if available
-                  : const AssetImage('assets/default_profile_image.png') as ImageProvider, // Fallback to a default image if no profile image
-              child: userProfileImageUrl == null
-                  ? const Icon(
+              child: Icon(
                 Icons.person,
                 color: Colors.black,
                 size: 30,
-              )
-                  : null, // Show icon only if there's no profile image
+              ),
+            )
+                : FutureBuilder<String?>(
+              future: ImageService().getUserProfileImage(job.createdBy!),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return const CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.person,
+                      color: Colors.black,
+                      size: 30,
+                    ),
+                  );
+                }
+
+                if (snapshot.hasData && snapshot.data != null) {
+                  return CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    backgroundImage: NetworkImage(snapshot.data!),
+                  );
+                }
+
+                return const CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.person,
+                    color: Colors.black,
+                    size: 30,
+                  ),
+                );
+              },
             ),
             const SizedBox(width: 16),
 
@@ -364,7 +408,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   // Job Title
                   Center(
                     child: Text(
-                      job.title,
+                      job.title ?? 'No Title', // Handle nullable title
                       style: const TextStyle(
                         color: Colors.orange,
                         fontSize: 18,
@@ -384,7 +428,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Created By: ${job.createdBy}',
+                    'Created By: ${job.createdBy ?? 'Unknown'}', // Handle nullable createdBy
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 14,
@@ -399,7 +443,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     children: [
                       // Left side: Hourly Rate
                       Text(
-                        '\$${job.hourlyRate}/hr',
+                        '\$${job.hourlyRate ?? 0}/hr', // Handle nullable hourlyRate
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -434,6 +478,11 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
+
+
+
+
+
 
   Widget _buildJobDetailsDialog(BuildContext context, Job job, bool isUserCreator) {
     return Dialog(

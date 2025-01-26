@@ -74,7 +74,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
         CircleAvatar(
           radius: 50,
           child: Icon(
-            _selectedIcon, // Display the selected icon
+            _selectedIcon,
             size: 50,
             color: Colors.grey,
           ),
