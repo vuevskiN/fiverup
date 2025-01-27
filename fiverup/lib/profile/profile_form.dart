@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main/main_page.dart';
 import '../models/profile.dart'; // Import Profile model
-import '../service/profileImg_service.dart';
 import '../service/profile_service.dart';
 
 class ProfileForm extends StatefulWidget {
@@ -21,8 +20,6 @@ class _ProfileFormState extends State<ProfileForm> {
   late TextEditingController _professionController;
   late TextEditingController _aboutController;
   final ProfileService _profileService = ProfileService();
-  final ImageService _imageService = ImageService(); // Initialize ImageService
-  String? _selectedIcon;
 
   @override
   void initState() {
@@ -30,7 +27,6 @@ class _ProfileFormState extends State<ProfileForm> {
     _nameController = TextEditingController(text: widget.profile.name);
     _professionController = TextEditingController(text: widget.profile.profession);
     _aboutController = TextEditingController(text: widget.profile.about);
-    _selectedIcon = widget.profile.avatarUrl; // Set initial icon if any
   }
 
   @override
@@ -41,7 +37,6 @@ class _ProfileFormState extends State<ProfileForm> {
     super.dispose();
   }
 
-  // Update the profile with the selected image icon
   Future<void> _updateProfile() async {
     if (_formKey.currentState!.validate()) {
       final updatedProfile = Profile(
@@ -50,15 +45,11 @@ class _ProfileFormState extends State<ProfileForm> {
         profession: _professionController.text.trim(),
         about: _aboutController.text.trim(),
         imageUrl: widget.profile.imageUrl,
-        avatarUrl: _selectedIcon ?? widget.profile.avatarUrl, // Use selected icon
+        avatarUrl: widget.profile.avatarUrl,  // No icon change
+        icons: widget.profile.icons,  // Preserve existing icons
       );
 
       await _profileService.updateProfile(widget.profile.id, updatedProfile);
-
-      // Update image icon if selected
-      if (_selectedIcon != null) {
-        await _imageService.updateProfileImageIcon(widget.profile.id, _selectedIcon!);
-      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile updated successfully')),
@@ -71,46 +62,6 @@ class _ProfileFormState extends State<ProfileForm> {
         ),
       );
     }
-  }
-
-  // Image selection function
-  Future<void> _selectImage() async {
-    // This can be replaced with an image picker or dropdown for selecting icons
-    final newIcon = await _showIconPickerDialog();
-    if (newIcon != null) {
-      setState(() {
-        _selectedIcon = newIcon;
-      });
-    }
-  }
-
-  Future<String?> _showIconPickerDialog() async {
-    // Example of an icon selection dialog
-    return showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Select an Icon'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                title: const Text('Icon 1'),
-                onTap: () => Navigator.pop(context, 'icon1.png'),
-              ),
-              ListTile(
-                title: const Text('Icon 2'),
-                onTap: () => Navigator.pop(context, 'icon2.png'),
-              ),
-              ListTile(
-                title: const Text('Icon 3'),
-                onTap: () => Navigator.pop(context, 'icon3.png'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -190,7 +141,6 @@ class _ProfileFormState extends State<ProfileForm> {
                 return null;
               },
             ),
-            
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _updateProfile,

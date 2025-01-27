@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/profile.dart';
-import '../service/profileImg_service.dart';
+import '../service/profile_service.dart';
 
 class ProfileInfoScreen extends StatefulWidget {
   final Profile profile;
-  final ImageService profileImgService = ImageService();
 
   ProfileInfoScreen({Key? key, required this.profile}) : super(key: key);
 
@@ -13,7 +12,6 @@ class ProfileInfoScreen extends StatefulWidget {
 }
 
 class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
-  // List of animal icons
   final List<IconData> animalIcons = [
     Icons.local_cafe_rounded, // Dog
     Icons.bug_report,  // Cat
@@ -22,26 +20,33 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
     Icons.directions_bike, // Sheep
   ];
 
-  IconData _selectedIcon = Icons.person; // Default icon
-  String? _storedIconName; // Name of the icon from Firestore
+  IconData _selectedIcon = Icons.person;
+  late ProfileService _profileService;
 
-  // Fetch the profile image icon from Firestore
+  @override
+  void initState() {
+    super.initState();
+    _profileService = ProfileService();
+    _fetchProfileImageIcon(); // Fetch the profile icon when the screen is initialized
+  }
+
   Future<void> _fetchProfileImageIcon() async {
     try {
-      String? iconName = await widget.profileImgService.getUserProfileImage(widget.profile.name);
-      if (iconName != null && iconName.isNotEmpty) {
-        // Map the stored icon name to the correct IconData
-        _selectedIcon = _getIconFromString(iconName);
-      } else {
-        _selectedIcon = Icons.person; // Default icon
+      var profile = await _profileService.getProfileById(widget.profile.id);
+      if (profile != null) {
+        String? iconName = profile.icons['avatarIcon'];
+        if (iconName != null && iconName.isNotEmpty) {
+          _selectedIcon = _getIconFromString(iconName);
+        } else {
+          _selectedIcon = Icons.person;
+        }
+        setState(() {});
       }
-      setState(() {});
     } catch (e) {
       print('Failed to fetch profile image: $e');
     }
   }
 
-  // Helper method to map icon name string to IconData
   IconData _getIconFromString(String iconName) {
     switch (iconName) {
       case 'local_cafe_rounded':
@@ -59,10 +64,22 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchProfileImageIcon(); // Fetch the profile icon when the screen is initialized
+  // Helper method to map IconData to string
+  String _getIconString(IconData icon) {
+    switch (icon) {
+      case Icons.local_cafe_rounded:
+        return 'local_cafe_rounded';
+      case Icons.bug_report:
+        return 'bug_report';
+      case Icons.local_florist:
+        return 'local_florist';
+      case Icons.apple:
+        return 'apple';
+      case Icons.directions_bike:
+        return 'directions_bike';
+      default:
+        return 'person'; // Default icon
+    }
   }
 
   @override
@@ -131,13 +148,17 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
     );
   }
 
-  // Method to update the profile image to the selected animal icon
+  // Method to update the profile image to the selected animal icon using ProfileService
   Future<void> _updateProfileImage(BuildContext context) async {
     try {
       String iconName = _getIconString(_selectedIcon); // Convert IconData to string
 
-      // Update the profile image with the selected icon (store in Firestore)
-      await widget.profileImgService.updateProfileImageIcon(widget.profile.name, iconName);
+      // Update the profile image with the selected icon in Firestore
+      await _profileService.updateProfileIcon(
+        widget.profile.id,
+        'avatarIcon', // Assuming 'avatarIcon' field in Firestore
+        iconName,
+      );
 
       // Refresh the UI
       ScaffoldMessenger.of(context).showSnackBar(
@@ -147,24 +168,6 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update profile image: $e')),
       );
-    }
-  }
-
-  // Helper method to map IconData to string
-  String _getIconString(IconData icon) {
-    switch (icon) {
-      case Icons.local_cafe_rounded:
-        return 'local_cafe_rounded';
-      case Icons.bug_report:
-        return 'bug_report';
-      case Icons.local_florist:
-        return 'local_florist';
-      case Icons.apple:
-        return 'apple';
-      case Icons.directions_bike:
-        return 'directions_bike';
-      default:
-        return 'person'; // Default icon
     }
   }
 }

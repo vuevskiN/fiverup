@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: WelcomeScreen(), // You can change this to ProfileScreen when needed
+      home: const WelcomeScreen(), // Ensure this screen can access ProfileService if needed
     );
   }
 }
