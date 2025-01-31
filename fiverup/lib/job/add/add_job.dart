@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // For formatting the selected date
+import 'package:intl/intl.dart';
 import '../../models/job.dart';
 import '../../service/job_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AddJobScreen extends StatefulWidget {
-  final Job? jobToEdit; // Pass the job to edit, if any
-  final String? jobId; // Pass the job ID to edit, if any
+  final Job? jobToEdit;
+  final String? jobId;
 
   AddJobScreen({this.jobToEdit, this.jobId});
 
@@ -21,8 +21,8 @@ class _AddJobScreenState extends State<AddJobScreen> {
   final _hourlyRateController = TextEditingController();
 
   bool _isOffering = false;
-  bool _isSeeking = true; // Initially set seeking to true
-  DateTime? _dueDate; // The new field for due date
+  bool _isSeeking = true;
+  DateTime? _dueDate;
 
   final JobService jobService = JobService();
 
@@ -30,14 +30,13 @@ class _AddJobScreenState extends State<AddJobScreen> {
   void initState() {
     super.initState();
 
-    // Pre-fill fields if editing a job
     if (widget.jobToEdit != null) {
       _titleController.text = widget.jobToEdit!.title;
       _descriptionController.text = widget.jobToEdit!.description;
       _hourlyRateController.text = widget.jobToEdit!.hourlyRate.toString();
       _isOffering = widget.jobToEdit!.offering;
       _isSeeking = widget.jobToEdit!.seeking;
-      _dueDate = widget.jobToEdit!.dueDate; // Set due date if editing
+      _dueDate = widget.jobToEdit!.dueDate;
     }
   }
 
@@ -47,24 +46,6 @@ class _AddJobScreenState extends State<AddJobScreen> {
     _descriptionController.dispose();
     _hourlyRateController.dispose();
     super.dispose();
-  }
-
-  void _onOfferingChanged(bool value) {
-    setState(() {
-      if (value) {
-        _isSeeking = false; // If offering is true, set seeking to false
-      }
-      _isOffering = value;
-    });
-  }
-
-  void _onSeekingChanged(bool value) {
-    setState(() {
-      if (value) {
-        _isOffering = false; // If seeking is true, set offering to false
-      }
-      _isSeeking = value;
-    });
   }
 
   Future<void> _addOrUpdateJob() async {
@@ -79,7 +60,6 @@ class _AddJobScreenState extends State<AddJobScreen> {
       }
 
       try {
-        // Assign a job ID for new jobs
         final jobId = widget.jobId ?? jobService.jobsCollection.doc().id;
 
         final job = Job(
@@ -90,24 +70,22 @@ class _AddJobScreenState extends State<AddJobScreen> {
           createdBy: widget.jobToEdit?.createdBy ?? user.email,
           seeking: _isSeeking,
           offering: _isOffering,
-          dueDate: _dueDate!, // Pass the selected due date
+          dueDate: _dueDate!,
         );
 
         if (widget.jobToEdit != null) {
-          // Update the existing job
           await jobService.updateJob(jobId, job);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Job updated successfully!')),
           );
         } else {
-          // Add a new job
           await jobService.addJob(job);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Job added successfully!')),
           );
         }
 
-        Navigator.pop(context); // Navigate back to the previous screen
+        Navigator.pop(context);
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to save job: $error')),
@@ -125,18 +103,16 @@ class _AddJobScreenState extends State<AddJobScreen> {
       context: context,
       initialDate: _dueDate ?? DateTime.now(),
       firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)), // Limit due date to within 1 year
+      lastDate: DateTime.now().add(const Duration(days: 365)),
     );
 
     if (pickedDate != null) {
-      // If the date is picked, now allow the user to pick a time
       final TimeOfDay? pickedTime = await showTimePicker(
         context: context,
-        initialTime: TimeOfDay.fromDateTime(_dueDate ?? DateTime.now()), // Default time is current time if no previous due date
+        initialTime: TimeOfDay.fromDateTime(_dueDate ?? DateTime.now()),
       );
 
       if (pickedTime != null) {
-        // Combine the selected date and time into a DateTime object
         setState(() {
           _dueDate = DateTime(
             pickedDate.year,
@@ -153,93 +129,103 @@ class _AddJobScreenState extends State<AddJobScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0D1B2A), // AppBar color
-        foregroundColor: Colors.white, // AppBar text color
-        title: Text(widget.jobToEdit != null ? 'Edit Job' : 'Add Job'),
-      ),
-      body: SingleChildScrollView(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF0D1B2A),
+          title: Text(
+            widget.jobToEdit != null ? 'Edit Job' : 'Add Job',
+            style: TextStyle(color: Colors.white),
+          ),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+
+        body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Job Title Field
-              _buildTextField(_titleController, 'Job Title'),
-
-              // Job Description Field
-              _buildTextField(_descriptionController, 'Job Description'),
-
-              // Hourly Rate Field
-              _buildTextField(_hourlyRateController, 'Hourly Rate', isNumber: true),
-
-              const SizedBox(height: 16),
-
-              // Offering Toggle
-              _buildSwitchRow('Offering:', _isOffering, _onOfferingChanged),
-
-              // Seeking Toggle
-              _buildSwitchRow('Seeking:', _isSeeking, _onSeekingChanged),
-
-              const SizedBox(height: 16),
-
-              // Due Date Field
-              Row(
-                children: [
-                  const Text('Due Date:', style: TextStyle(fontSize: 16)),
-                  TextButton(
-                    onPressed: _pickDueDate,
-                    child: Text(
-                      _dueDate == null
-                          ? 'Select Date'
-                          : DateFormat('yyyy-MM-dd').format(_dueDate!),
-                      style: TextStyle(color: Theme.of(context).primaryColor),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTextField(_titleController, 'Job Title'),
+                _buildTextField(_descriptionController, 'Job Description'),
+                _buildTextField(_hourlyRateController, 'Hourly Rate', isNumber: true),
+                const SizedBox(height: 16),
+                _buildSwitchRow('Offering:', _isOffering, (value) {
+                  setState(() {
+                    _isOffering = value;
+                    if (value) _isSeeking = false;
+                  });
+                }),
+                _buildSwitchRow('Seeking:', _isSeeking, (value) {
+                  setState(() {
+                    _isSeeking = value;
+                    if (value) _isOffering = false;
+                  });
+                }),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Text('Due Date:', style: TextStyle(fontSize: 16)),
+                    TextButton(
+                      onPressed: _pickDueDate,
+                      child: Text(
+                        _dueDate == null
+                            ? 'Select Date'
+                            : DateFormat('yyyy-MM-dd HH:mm').format(_dueDate!),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              // Submit Button
-              Center(
-                child: ElevatedButton(
-                  onPressed: _addOrUpdateJob,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D1B2A),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  ),
-                  child: Text(
-                    widget.jobToEdit != null ? 'Update Job' : 'Add Job',
-                    style: const TextStyle(fontSize: 16),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _addOrUpdateJob,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0D1B2A),
+                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    ),
+                    child: Text(widget.jobToEdit != null ? 'Update Job' : 'Add Job', style: TextStyle(color: Colors.white),),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // Helper method to build text fields
   Widget _buildTextField(TextEditingController controller, String label, {bool isNumber = false}) {
     return TextFormField(
       controller: controller,
-      decoration: InputDecoration(labelText: label),
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      validator: (value) => value == null || value.trim().isEmpty ? 'Enter a $label' : null,
+      decoration: InputDecoration(labelText: label),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return '$label is required';
+        }
+        if (isNumber && double.tryParse(value) == null) {
+          return 'Please enter a valid number';
+        }
+        return null;
+      },
     );
   }
 
-  // Helper method to build switch rows
   Widget _buildSwitchRow(String label, bool value, Function(bool) onChanged) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: const TextStyle(fontSize: 16)),
-        Switch(value: value, onChanged: onChanged),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+        ),
       ],
     );
   }

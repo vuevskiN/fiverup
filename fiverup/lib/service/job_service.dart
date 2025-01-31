@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import '../models/job.dart';
 
 class JobService {
@@ -17,11 +16,11 @@ class JobService {
         'createdBy': user.email,
         'seeking': job.seeking,
         'offering': job.offering,
-        'dueDate': job.dueDate, // Save as Firestore Timestamp
+        'dueDate': job.dueDate,
+        'comments': [],
       });
     }
   }
-
 
   Future<void> updateJob(String jobId, Job updatedJob) async {
     await _firestore.collection('jobs').doc(jobId).update({
@@ -30,10 +29,9 @@ class JobService {
       'hourlyRate': updatedJob.hourlyRate,
       'seeking': updatedJob.seeking,
       'offering': updatedJob.offering,
-      'dueDate': updatedJob.dueDate, // Update Firestore Timestamp
+      'dueDate': updatedJob.dueDate,
     });
   }
-
 
   // Delete a job
   Future<void> deleteJob(String jobId) async {
@@ -48,8 +46,6 @@ class JobService {
     });
   }
 
-
-  // Fetch a single job by its ID
   Future<Job?> getJobById(String jobId) async {
     DocumentSnapshot doc = await _firestore.collection('jobs').doc(jobId).get();
     if (doc.exists) {
@@ -58,6 +54,7 @@ class JobService {
     return null;
   }
 
+  // Add a comment to a job
   Future<void> addCommentToJob(String jobId, String commentText, String userEmail) async {
     try {
       final comment = {
@@ -66,18 +63,15 @@ class JobService {
         'timestamp': FieldValue.serverTimestamp(),
       };
 
-      // Add comment to the job's 'comments' field in Firestore
       await _firestore.collection('jobs').doc(jobId).update({
-        'comments': FieldValue.arrayUnion([comment]), // Use arrayUnion to add to the list
+        'comments': FieldValue.arrayUnion([comment]),
       });
     } catch (e) {
       throw Exception('Failed to add comment: $e');
     }
   }
 
-
   final CollectionReference jobsCollection =
   FirebaseFirestore.instance.collection('jobs');
-
 
 }

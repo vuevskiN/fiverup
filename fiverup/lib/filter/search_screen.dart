@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fiverup/service/profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import '../application_screen/lapplication_screen.dart';
 import '../job/edit/edit_job.dart';
 import '../models/job.dart';
@@ -620,7 +621,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
     bool isUserCreator = loggedInUser == job.createdBy;
 
-
+    String formattedDueDate = job.dueDate != null
+        ? DateFormat('MMM dd, yyyy').format(job.dueDate!)
+        : 'No due date';
 
     return Card(
 
@@ -833,11 +836,17 @@ class _SearchScreenState extends State<SearchScreen> {
 
                   ),
 
-
+                  const SizedBox(height: 2,),
+                  Text(
+                    'Due Date $formattedDueDate',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
 
                   const Spacer(),
-
-
 
 // Second section with hourly rate and "+" icon
 
@@ -1293,14 +1302,17 @@ class _SearchScreenState extends State<SearchScreen> {
 
 IconData _getIconFromName(String iconName) {
   switch (iconName) {
-    case 'apple':
-      return Icons.apple;
+    case 'local_cafe_rounded':
+      return Icons.local_cafe_rounded;
+    case 'bug_report':
+      return Icons.bug_report;
     case 'local_florist':
       return Icons.local_florist;
-    case 'settings':
-      return Icons.settings;
-  // Add more cases for your available icons
+    case 'apple':
+      return Icons.apple;
+    case 'directions_bike':
+      return Icons.directions_bike;
     default:
-      return Icons.help; // Fallback icon
+      return Icons.person;
   }
 }

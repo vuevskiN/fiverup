@@ -1,14 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // For date formatting
-import '../service/notification_service.dart';
+import 'package:intl/intl.dart';
+import '../service/application_service.dart';
 
 class ApplicantListScreen extends StatefulWidget {
   final String jobTitle;
   final List<Map<String, dynamic>> applications;
 
-  // Constructor
   ApplicantListScreen({required this.jobTitle, required this.applications});
 
   @override
@@ -16,20 +14,17 @@ class ApplicantListScreen extends StatefulWidget {
 }
 
 class _ApplicantListScreenState extends State<ApplicantListScreen> {
-  final NotificationService _notificationService = NotificationService();
+  final ApplicationService _applicationService = ApplicationService();
 
-  void _sendNotification(String applicantEmail, String status, int index) async {
-    // Send notification when a decision is made
-    await _notificationService.sendNotification(
-      senderEmail: FirebaseAuth.instance.currentUser!.email!,
-      receiverEmail: applicantEmail,
-      status: status,
-    );
-
-    // Remove the card from the list
-    setState(() {
-      widget.applications.removeAt(index);
-    });
+  void _processApplication(String applicantEmail, String status, int index, String applicationId) async {
+    try {
+      await _applicationService.processApplication(applicantEmail, status, applicationId);
+      setState(() {
+        widget.applications.removeAt(index);
+      });
+    } catch (e) {
+      print("Error processing application: $e");
+    }
   }
 
   String _formatDate(Timestamp timestamp) {
@@ -67,7 +62,6 @@ class _ApplicantListScreenState extends State<ApplicantListScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
-                  // Applicant Email
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,15 +86,14 @@ class _ApplicantListScreenState extends State<ApplicantListScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Action Buttons
                   Column(
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          _sendNotification(application['applicantEmail'], 'accepted', index);
+                          _processApplication(application['applicantEmail'], 'accepted', index, application['id']);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green, // Green for accepted
+                          backgroundColor: Colors.green,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
@@ -111,10 +104,10 @@ class _ApplicantListScreenState extends State<ApplicantListScreen> {
                       const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
-                          _sendNotification(application['applicantEmail'], 'denied', index);
+                          _processApplication(application['applicantEmail'], 'denied', index, application['id']);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red, // Red for denied
+                          backgroundColor: Colors.red,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),

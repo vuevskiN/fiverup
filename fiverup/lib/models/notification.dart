@@ -15,7 +15,6 @@ class NotificationModel {
     this.isRead = false,
   });
 
-  // Convert model to a map
   Map<String, dynamic> toMap() {
     return {
       'senderEmail': senderEmail,
@@ -26,7 +25,6 @@ class NotificationModel {
     };
   }
 
-  // Convert map to model
   factory NotificationModel.fromMap(Map<String, dynamic> map) {
     return NotificationModel(
       senderEmail: map['senderEmail'],

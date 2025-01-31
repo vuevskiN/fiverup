@@ -2,8 +2,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import '../../login/form_container.dart';
 import '../../profile/add/profile_creation.dart';
+import '../../service/profile_service.dart';
 
 class SignupForm extends StatefulWidget {
   const SignupForm({Key? key}) : super(key: key);
@@ -51,15 +53,18 @@ class _SignupFormState extends State<SignupForm> {
 
       final String userId = userCredential.user!.uid;
 
+      // Save user data to Firestore
       await FirebaseFirestore.instance.collection('users').doc(userId).set({
         'email': userCredential.user!.email,
+        'userId': userId,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      await FirebaseFirestore.instance.collection('profiles').doc(userId).set({
-        'email': userCredential.user!.email,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      // Optionally add profile creation logic
+      await Provider.of<ProfileService>(context, listen: false).addProfile(
+        userId: userId,
+        email: userCredential.user!.email!,
+      );
 
       Navigator.pushReplacement(
         context,
@@ -75,6 +80,7 @@ class _SignupFormState extends State<SignupForm> {
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +168,7 @@ class _SignupFormState extends State<SignupForm> {
                     recognizer: TapGestureRecognizer()
                       ..onTap = () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) => FormContainerPage()),
+                          MaterialPageRoute(builder: (context) =>  FormContainerPage()),
                         );
                       },
                   ),

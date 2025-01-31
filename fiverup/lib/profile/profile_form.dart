@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main/main_page.dart';
-import '../models/profile.dart'; // Import Profile model
+import '../models/profile.dart';
 import '../service/profile_service.dart';
 
 class ProfileForm extends StatefulWidget {
@@ -45,8 +45,8 @@ class _ProfileFormState extends State<ProfileForm> {
         profession: _professionController.text.trim(),
         about: _aboutController.text.trim(),
         imageUrl: widget.profile.imageUrl,
-        avatarUrl: widget.profile.avatarUrl,  // No icon change
-        icons: widget.profile.icons,  // Preserve existing icons
+        avatarUrl: widget.profile.avatarUrl,
+        icons: widget.profile.icons,
       );
 
       await _profileService.updateProfile(widget.profile.id, updatedProfile);

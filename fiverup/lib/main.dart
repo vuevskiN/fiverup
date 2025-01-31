@@ -2,9 +2,9 @@ import 'package:fiverup/logo/welcome_screen.dart';
 import 'package:fiverup/register/auth_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:provider/provider.dart'; // Import the Provider package
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
-import 'service/profile_service.dart'; // Import ProfileService
+import 'service/profile_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,7 +13,7 @@ void main() async {
   );
   runApp(
     ChangeNotifierProvider(
-      create: (context) => ProfileService(), // Provide ProfileService
+      create: (context) => ProfileService(),
       child: const MyApp(),
     ),
   );
@@ -22,7 +22,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -31,7 +30,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const WelcomeScreen(), // Ensure this screen can access ProfileService if needed
+      home: const WelcomeScreen(),
     );
   }
 }

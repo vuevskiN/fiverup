@@ -18,7 +18,6 @@ class ProfileCreationPage extends StatelessWidget {
       // Form inputs are valid
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-      // Generate a document ID
       final docRef = firestore.collection('profiles').doc();
 
       try {
@@ -30,7 +29,6 @@ class ProfileCreationPage extends StatelessWidget {
           'imageUrl': '', // Placeholder for image URL
         });
 
-        // Navigate to the HomePage with the new profileId
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

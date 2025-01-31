@@ -13,11 +13,11 @@ class ProfileInfoScreen extends StatefulWidget {
 
 class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
   final List<IconData> animalIcons = [
-    Icons.local_cafe_rounded, // Dog
-    Icons.bug_report,  // Cat
-    Icons.local_florist,  // Cow
-    Icons.apple, // Horse
-    Icons.directions_bike, // Sheep
+    Icons.local_cafe_rounded,
+    Icons.bug_report,
+    Icons.local_florist,
+    Icons.apple,
+    Icons.directions_bike,
   ];
 
   IconData _selectedIcon = Icons.person;
@@ -27,7 +27,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
   void initState() {
     super.initState();
     _profileService = ProfileService();
-    _fetchProfileImageIcon(); // Fetch the profile icon when the screen is initialized
+    _fetchProfileImageIcon();
   }
 
   Future<void> _fetchProfileImageIcon() async {
@@ -60,11 +60,10 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
       case 'directions_bike':
         return Icons.directions_bike;
       default:
-        return Icons.person; // Default icon
+        return Icons.person;
     }
   }
 
-  // Helper method to map IconData to string
   String _getIconString(IconData icon) {
     switch (icon) {
       case Icons.local_cafe_rounded:
@@ -78,7 +77,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
       case Icons.directions_bike:
         return 'directions_bike';
       default:
-        return 'person'; // Default icon
+        return 'person';
     }
   }
 
@@ -110,7 +109,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
             return GestureDetector(
               onTap: () {
                 setState(() {
-                  _selectedIcon = icon; // Update the selected icon when clicked
+                  _selectedIcon = icon;
                 });
               },
               child: Padding(
@@ -148,19 +147,16 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
     );
   }
 
-  // Method to update the profile image to the selected animal icon using ProfileService
   Future<void> _updateProfileImage(BuildContext context) async {
     try {
-      String iconName = _getIconString(_selectedIcon); // Convert IconData to string
+      String iconName = _getIconString(_selectedIcon);
 
-      // Update the profile image with the selected icon in Firestore
       await _profileService.updateProfileIcon(
         widget.profile.id,
-        'avatarIcon', // Assuming 'avatarIcon' field in Firestore
+        'avatarIcon',
         iconName,
       );
 
-      // Refresh the UI
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile image updated successfully')),
       );

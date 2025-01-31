@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../login/form_container.dart';
-import 'widgets/auth_header.dart';
 import 'widgets/signup_form.dart';
 
 class AuthScreen extends StatelessWidget {
@@ -9,13 +7,28 @@ class AuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF0D1B2A),
+          title: Center(
+            child: Text(
+              'Fiver Up',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+                fontFamily: 'Roboto',
+              ),
+            ),
+          ),
+        ),
+
+        body: SingleChildScrollView(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 480),
           padding: const EdgeInsets.only(bottom: 174),
           child: Column(
             children: [
-               AuthHeader(),
               const SizedBox(height: 110),
               const SignupForm(),
             ],

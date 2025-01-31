@@ -72,7 +72,7 @@ class _PromoSectionState extends State<PromoSection> {
               borderRadius: BorderRadius.circular(30),
               boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 6, spreadRadius: 2)],
             ),
-            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12), // Reduced padding for a thinner search bar
+            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
             child: Row(
               children: [
                 Expanded(

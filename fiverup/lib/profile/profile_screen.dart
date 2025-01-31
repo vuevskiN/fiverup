@@ -1,3 +1,4 @@
+import 'package:fiverup/profile/comment_info.dart';
 import 'package:fiverup/profile/profile_form.dart';
 import 'package:fiverup/profile/profile_header.dart';
 import 'package:fiverup/profile/profile_info.dart';
@@ -53,6 +54,30 @@ class ProfileScreen extends StatelessWidget {
                       ProfileInfoScreen(profile: profile),
                       const SizedBox(height: 20),
                       ProfileForm(profile: profile, profileId: profileId),
+                      Container(
+                       // margin: const EdgeInsets.only(top: 16.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) => CommentsScreen()),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            fixedSize: Size(200, 30),
+                            backgroundColor: const Color(0xFF0D1B2A),
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero, // Ensures sharp corners (rectangle shape)
+                            ),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              "View Comments",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   );
                 },

@@ -8,7 +8,6 @@ class ImageService {
 
   Future<String?> getUserProfileImage(String userId) async {
     try {
-      // Fetch profile based on userId
       var profileSnapshot = await _firestore
           .collection('profiles')
           .where('userId', isEqualTo: userId)
@@ -16,13 +15,12 @@ class ImageService {
 
       if (profileSnapshot.docs.isNotEmpty) {
         var profileDoc = profileSnapshot.docs.first;
-        // Assuming the profile document contains an 'imageUrl' field
-        return profileDoc['imageUrl']; // Return image URL if exists
+        return profileDoc['imageUrl'];
       }
     } catch (e) {
       print("Error fetching profile image: $e");
     }
-    return null; // Return null if no profile or image is found
+    return null;
   }
 
   Future<void> printAllImages() async {

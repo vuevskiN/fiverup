@@ -2,50 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart'; // For modern fonts
 import '../filter/search_screen.dart';
 
-// 1. Create the Popular model
-class Popular {
-  final String name;
-  final IconData icon;
-
-  Popular({required this.name, required this.icon});
-}
-
-// 2. A service to get the popular items (simulating it here with a list)
-class PopularService {
-  static List<Popular> getPopularItems() {
-    return [
-      Popular(
-        name: 'Software Developer',
-        icon: Icons.computer,
-      ),
-      Popular(
-        name: 'Graphic Designer',
-        icon: Icons.design_services,
-      ),
-      Popular(
-        name: 'Music Producer',
-        icon: Icons.music_note,
-      ),
-      Popular(
-        name: 'Content Writer',
-        icon: Icons.create,
-      ),
-      Popular(
-        name: 'Data Analyst',
-        icon: Icons.analytics,
-      ),
-      Popular(
-        name: 'Consultant',
-        icon: Icons.business,
-      ),
-    ];
-  }
-}
 
 class PopularSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Fetch the list of popular items from the service
     List<Popular> popularItems = PopularService.getPopularItems();
 
     return Padding(
@@ -66,15 +26,14 @@ class PopularSection extends StatelessWidget {
             ),
           ),
           SizedBox(height: 16),
-          // Use GridView to display cards in 3 columns and 2 rows
           GridView.builder(
-            shrinkWrap: true, // To prevent GridView from taking unnecessary space
-            physics: NeverScrollableScrollPhysics(), // Prevent scrolling within the GridView
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3, // 3 cards in one row
-              crossAxisSpacing: 12, // Space between cards horizontally
-              mainAxisSpacing: 12, // Space between cards vertically
-              childAspectRatio: 0.65, // Adjust the aspect ratio for smaller card size
+              crossAxisCount: 3,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.65,
             ),
             itemCount: 6, // Limit to 6 items for 2 rows of 3 cards each
             itemBuilder: (context, index) {
@@ -87,7 +46,6 @@ class PopularSection extends StatelessWidget {
   }
 }
 
-// 3. Tile widget to display each popular item
 class PopularTile extends StatelessWidget {
   final Popular popular;
 
@@ -97,7 +55,6 @@ class PopularTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Navigate to the SearchScreen with the name of the clicked popular item as the search query
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -142,5 +99,44 @@ class PopularTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+
+class Popular {
+  final String name;
+  final IconData icon;
+
+  Popular({required this.name, required this.icon});
+}
+
+class PopularService {
+  static List<Popular> getPopularItems() {
+    return [
+      Popular(
+        name: 'Software Developer',
+        icon: Icons.computer,
+      ),
+      Popular(
+        name: 'Graphic Designer',
+        icon: Icons.design_services,
+      ),
+      Popular(
+        name: 'Music Producer',
+        icon: Icons.music_note,
+      ),
+      Popular(
+        name: 'Content Writer',
+        icon: Icons.create,
+      ),
+      Popular(
+        name: 'Data Analyst',
+        icon: Icons.analytics,
+      ),
+      Popular(
+        name: 'Consultant',
+        icon: Icons.business,
+      ),
+    ];
   }
 }

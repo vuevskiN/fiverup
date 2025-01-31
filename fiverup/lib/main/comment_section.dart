@@ -1,9 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
-import '../service/comment_service.dart';
 
 class CommentSection extends StatefulWidget {
   const CommentSection({Key? key}) : super(key: key);
@@ -13,33 +11,44 @@ class CommentSection extends StatefulWidget {
 }
 
 class _CommentSectionState extends State<CommentSection> {
-  late Future<List<String>> _userEmails;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   TextEditingController _commentController = TextEditingController();
   String? _selectedUserEmail;
+  double _rating = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    _userEmails = fetchUserEmails(); // Fetch user emails using the updated service
+  Future<List<String>> fetchFilteredUserEmails() async {
+    final currentUser = _auth.currentUser;
+    if (currentUser == null) return [];
+
+    final querySnapshot = await _firestore.collection('users').get();
+    return querySnapshot.docs
+        .map((doc) => doc['email'] as String)
+        .where((email) => email != currentUser.email)
+        .toList();
   }
 
-  void _submitComment() async {
-    if (_selectedUserEmail == null || _commentController.text.isEmpty) {
+  Future<void> submitComment() async {
+    if (_selectedUserEmail == null || _commentController.text.isEmpty || _rating == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a user and write a comment.')),
+        SnackBar(content: Text('Please select a user, write a comment, and provide a rating.')),
       );
       return;
     }
 
     try {
-      await FirebaseFirestore.instance.collection('comments').add({
+      await _firestore.collection('comments').add({
         'comment': _commentController.text,
         'userEmail': _selectedUserEmail,
+        'rating': _rating,
         'timestamp': FieldValue.serverTimestamp(),
       });
+
       setState(() {
         _commentController.clear();
+        _rating = 0;
       });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Comment submitted successfully!')));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting comment')));
     }
@@ -47,83 +56,89 @@ class _CommentSectionState extends State<CommentSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 24), // Added margins for the card
-      decoration: BoxDecoration(
-        color: Color(0xFFF3F3F3), // Light background for the comment section
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, spreadRadius: 2)], // Soft shadow for depth
-      ),
-      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-      child: Column(
-        children: [
-          Text(
-            'User Comments',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-          SizedBox(height: 12),
-          FutureBuilder<List<String>>(
-            future: _userEmails,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();
-              }
-
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Text('No users available');
-              }
-
-              return DropdownButton<String>(
-                value: _selectedUserEmail,
-                hint: Text('Select user'),
-                isExpanded: true,
-                onChanged: (newValue) {
+    return Center(
+      child: Container(
+        width: 350,
+        height: 250,
+        margin: EdgeInsets.only(bottom: 30),
+        decoration: BoxDecoration(
+          color: Color(0xFFF3F3F3),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, spreadRadius: 2)],
+        ),
+        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('User Comments', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
+              SizedBox(height: 8),
+              FutureBuilder<List<String>>(
+                future: fetchFilteredUserEmails(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator();
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Text('No users available');
+                  }
+                  return DropdownButton<String>(
+                    value: _selectedUserEmail,
+                    hint: Text('Select user'),
+                    isExpanded: true,
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedUserEmail = newValue;
+                      });
+                    },
+                    items: snapshot.data!
+                        .map((email) => DropdownMenuItem(value: email, child: Text(email)))
+                        .toList(),
+                  );
+                },
+              ),
+              SizedBox(height: 8),
+              RatingBar.builder(
+                initialRating: _rating,
+                minRating: 1,
+                direction: Axis.horizontal,
+                allowHalfRating: true,
+                itemCount: 5,
+                itemSize: 20,
+                itemPadding: EdgeInsets.symmetric(horizontal: 2.0),
+                itemBuilder: (context, _) => Icon(Icons.star, color: Colors.amber),
+                onRatingUpdate: (rating) {
                   setState(() {
-                    _selectedUserEmail = newValue;
+                    _rating = rating;
                   });
                 },
-                items: snapshot.data!
-                    .map<DropdownMenuItem<String>>(
-                      (email) => DropdownMenuItem<String>(
-                    value: email,
-                    child: Text(email),
-                  ),
-                )
-                    .toList(),
-              );
-            },
-          ),
-          SizedBox(height: 12),
-          TextField(
-            controller: _commentController,
-            decoration: InputDecoration(
-              hintText: 'Write a comment...',
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
               ),
-              contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12), // Smaller padding
-            ),
-            maxLines: 3, // Make the text field smaller by limiting the lines
+              SizedBox(height: 8),
+              TextField(
+                controller: _commentController,
+                decoration: InputDecoration(
+                  hintText: 'Write a comment...',
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                  contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                ),
+                maxLines: 2,
+              ),
+              SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: submitComment,
+                child: Text('Submit'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF0D1B2A),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _submitComment,
-            child: Text('Submit Comment'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF0D1B2A),
-              foregroundColor: Colors.white,// Consistent color scheme
-              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

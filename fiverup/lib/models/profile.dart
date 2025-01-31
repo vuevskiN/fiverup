@@ -5,7 +5,7 @@ class Profile {
   final String about;
   final String imageUrl;
   final String avatarUrl;
-  final Map<String, dynamic> icons; // Added icons field
+  final Map<String, dynamic> icons;
 
   Profile({
     required this.id,
@@ -14,7 +14,7 @@ class Profile {
     required this.about,
     required this.imageUrl,
     required this.avatarUrl,
-    required this.icons, // Add icons parameter
+    required this.icons,
   });
 
   factory Profile.fromFirestore(String id, Map<String, dynamic> data) {
@@ -25,7 +25,7 @@ class Profile {
       about: data['about'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
       avatarUrl: data['avatarUrl'] ?? '',
-      icons: data['icons'] ?? {}, // Handle icons field
+      icons: data['icons'] ?? {},
     );
   }
 
@@ -36,7 +36,7 @@ class Profile {
       'about': about,
       'imageUrl': imageUrl,
       'avatarUrl': avatarUrl,
-      'icons': icons, // Include icons in serialization
+      'icons': icons,
     };
   }
 }

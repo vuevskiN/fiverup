@@ -142,6 +142,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 color: Colors.black54,
                               ),
                             ),
+                            if (notification['status'] == 'accepted') ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                '🎉 Congratulations! Please email ${notification['senderEmail']} for more details.',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green,
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 8),
                             Align(
                               alignment: Alignment.bottomRight,
@@ -164,6 +175,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ),
                 ),
               );
+
             },
           );
         },

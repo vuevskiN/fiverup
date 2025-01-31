@@ -2,8 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fiverup/main/main_page.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../profile/add/profile_creation.dart';
 
 class FormContainerPage extends StatelessWidget {
@@ -12,10 +10,17 @@ class FormContainerPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sign In'),
-        backgroundColor: const  Color(0xFF0D1B2A),
+        backgroundColor: const Color(0xFF0D1B2A),
         foregroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
+
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -42,7 +47,6 @@ class FormContainer extends StatelessWidget {
     return querySnapshot.docs.isNotEmpty;
   }
 
-  // Function to sign in the user with Firebase
   Future<void> _signInUser(BuildContext context) async {
     try {
       print("Sign-In button clicked");
@@ -57,12 +61,12 @@ class FormContainer extends StatelessWidget {
       final bool profileExists = await _checkProfileExists(email);
 
       if (profileExists) {
-        final String profileId = await _getProfileId(email);  // Fetch profile ID
+        final String profileId = await _getProfileId(email);
         print("PROFILE ID FROM LOGIN SCREEN: $profileId");
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(profileId: profileId), // Pass profileId here
+            builder: (context) => HomePage(profileId: profileId),
           ),
         );
       } else {

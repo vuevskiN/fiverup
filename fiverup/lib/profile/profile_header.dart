@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/profile.dart'; // Import Profile model
+import '../models/profile.dart';
 
 class ProfileHeader extends StatelessWidget {
-  final Profile profile; // Accept the Profile object
+  final Profile profile;
 
   const ProfileHeader({Key? key, required this.profile}) : super(key: key);
 
@@ -10,7 +10,7 @@ class ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Back button section (unchanged)
+
         Container(
           width: 86,
           color: const Color(0xFF0D1B2A),
@@ -27,11 +27,11 @@ class ProfileHeader extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ),
-        // Profile image and avatar section
+
         Stack(
           alignment: Alignment.center,
           children: [
-            // Profile Image Circle
+
             Container(
               margin: const EdgeInsets.only(top: 86, bottom: 51),
               width: 120,
@@ -50,11 +50,11 @@ class ProfileHeader extends StatelessWidget {
               right: 24,
               child: profile.imageUrl.isNotEmpty
                   ? Image.network(
-                profile.imageUrl, // Use the profile image URL if available
+                profile.imageUrl,
                 width: 25,
                 height: 25,
               )
-                  : Container(), // Handle the case where no avatar image is provided
+                  : Container(),
             ),
           ],
         ),
