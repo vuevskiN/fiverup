@@ -19,6 +19,7 @@ class _ProfileFormState extends State<ProfileForm> {
   late TextEditingController _nameController;
   late TextEditingController _professionController;
   late TextEditingController _aboutController;
+  late TextEditingController _skillsController;
   final ProfileService _profileService = ProfileService();
 
   @override
@@ -27,6 +28,7 @@ class _ProfileFormState extends State<ProfileForm> {
     _nameController = TextEditingController(text: widget.profile.name);
     _professionController = TextEditingController(text: widget.profile.profession);
     _aboutController = TextEditingController(text: widget.profile.about);
+    _skillsController = TextEditingController(text: widget.profile.skills?.join(', '));
   }
 
   @override
@@ -34,6 +36,7 @@ class _ProfileFormState extends State<ProfileForm> {
     _nameController.dispose();
     _professionController.dispose();
     _aboutController.dispose();
+    _skillsController.dispose();
     super.dispose();
   }
 
@@ -44,6 +47,7 @@ class _ProfileFormState extends State<ProfileForm> {
         name: _nameController.text.trim(),
         profession: _professionController.text.trim(),
         about: _aboutController.text.trim(),
+        skills: _skillsController.text.trim().split(',').map((e) => e.trim()).toList(), // Convert the string back to List<String>
         imageUrl: widget.profile.imageUrl,
         avatarUrl: widget.profile.avatarUrl,
         icons: widget.profile.icons,
@@ -137,6 +141,25 @@ class _ProfileFormState extends State<ProfileForm> {
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'About is required';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _skillsController,
+              decoration: InputDecoration(
+                labelText: 'Skills (comma separated)',
+                labelStyle: const TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Skills are required';
                 }
                 return null;
               },

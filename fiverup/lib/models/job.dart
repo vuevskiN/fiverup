@@ -9,7 +9,10 @@ class Job {
   final bool seeking;
   final bool offering;
   final DateTime? dueDate;
-  final List<Map<String, dynamic>> comments; // New field for comments
+  final List<Map<String, dynamic>> comments;
+  final List<String>? requiredSkills;
+  final List<String>? tags;
+  final String? location;
 
   Job({
     required this.jobId,
@@ -20,7 +23,10 @@ class Job {
     required this.seeking,
     required this.offering,
     this.dueDate,
-    this.comments = const [], // Initialize with an empty list
+    this.comments = const [],
+     this.requiredSkills,
+     this.tags,
+     this.location,
   }) {
     if (seeking == offering) {
       throw ArgumentError('Both seeking and offering cannot be true at the same time.');
@@ -37,7 +43,9 @@ class Job {
       seeking: data['seeking'] ?? true,
       offering: data['offering'] ?? false,
       dueDate: data['dueDate'] != null ? (data['dueDate'] as Timestamp).toDate() : null,
-      comments: data['comments'] != null ? List<Map<String, dynamic>>.from(data['comments']) : [], // Fetch comments
+      comments: data['comments'] != null ? List<Map<String, dynamic>>.from(data['comments']) : [],
+      requiredSkills: List<String>.from(data['requiredSkills'] ?? []),
+      location: data['location'] ?? 'Remote'
     );
   }
 
@@ -50,7 +58,10 @@ class Job {
       'seeking': seeking,
       'offering': offering,
       'dueDate': dueDate,
-      'comments': comments, // Store comments as a list of maps
+      'comments': comments,
+      'requiredSkills' : requiredSkills,
+      'tags' : tags,
+      'location' : location
     };
   }
 }

@@ -19,6 +19,9 @@ class _AddJobScreenState extends State<AddJobScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _hourlyRateController = TextEditingController();
+  final _locationController = TextEditingController();
+  final _skillsController = TextEditingController();
+  final _tagsController = TextEditingController();
 
   bool _isOffering = false;
   bool _isSeeking = true;
@@ -37,6 +40,9 @@ class _AddJobScreenState extends State<AddJobScreen> {
       _isOffering = widget.jobToEdit!.offering;
       _isSeeking = widget.jobToEdit!.seeking;
       _dueDate = widget.jobToEdit!.dueDate;
+      _locationController.text = widget.jobToEdit!.location ?? '';
+      _skillsController.text = widget.jobToEdit!.requiredSkills?.join(', ') ?? '';
+      _tagsController.text = widget.jobToEdit!.tags?.join(', ') ?? '';
     }
   }
 
@@ -45,6 +51,9 @@ class _AddJobScreenState extends State<AddJobScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _hourlyRateController.dispose();
+    _locationController.dispose();
+    _skillsController.dispose();
+    _tagsController.dispose();
     super.dispose();
   }
 
@@ -71,6 +80,9 @@ class _AddJobScreenState extends State<AddJobScreen> {
           seeking: _isSeeking,
           offering: _isOffering,
           dueDate: _dueDate!,
+          location: _locationController.text.trim(),
+          requiredSkills: _skillsController.text.split(',').map((s) => s.trim()).toList(),
+          tags: _tagsController.text.split(',').map((t) => t.trim()).toList(),
         );
 
         if (widget.jobToEdit != null) {
@@ -154,6 +166,9 @@ class _AddJobScreenState extends State<AddJobScreen> {
                 _buildTextField(_titleController, 'Job Title'),
                 _buildTextField(_descriptionController, 'Job Description'),
                 _buildTextField(_hourlyRateController, 'Hourly Rate', isNumber: true),
+                _buildTextField(_locationController, 'Location'),
+                _buildTextField(_skillsController, 'Required Skills (comma-separated)'),
+                _buildTextField(_tagsController, 'Tags (comma-separated)'),
                 const SizedBox(height: 16),
                 _buildSwitchRow('Offering:', _isOffering, (value) {
                   setState(() {

@@ -6,6 +6,7 @@ class Profile {
   final String imageUrl;
   final String avatarUrl;
   final Map<String, dynamic> icons;
+  final List<String>? skills;
 
   Profile({
     required this.id,
@@ -15,6 +16,7 @@ class Profile {
     required this.imageUrl,
     required this.avatarUrl,
     required this.icons,
+    this.skills,
   });
 
   factory Profile.fromFirestore(String id, Map<String, dynamic> data) {
@@ -26,6 +28,7 @@ class Profile {
       imageUrl: data['imageUrl'] ?? '',
       avatarUrl: data['avatarUrl'] ?? '',
       icons: data['icons'] ?? {},
+      skills: data['skills'] != null ? List<String>.from(data['skills']) : null,
     );
   }
 
@@ -37,6 +40,7 @@ class Profile {
       'imageUrl': imageUrl,
       'avatarUrl': avatarUrl,
       'icons': icons,
+      'skills': skills ?? [],
     };
   }
 }

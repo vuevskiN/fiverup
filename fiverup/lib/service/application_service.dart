@@ -6,17 +6,16 @@ class ApplicationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final NotificationService _notificationService = NotificationService();
 
-  Future<void> applyForJob(String jobId, String offeredBy) async {
+  Future<void> applyForJob(String jobId) async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
-
       if (currentUser == null) {
         throw Exception("No user authenticated.");
       }
 
       await _firestore.collection('applications').add({
         'jobId': jobId,
-        'offeredBy': offeredBy,
+        'offeredBy': currentUser.email,
         'applicantEmail': currentUser.email,
         'appliedAt': Timestamp.now(),
       });
@@ -63,6 +62,68 @@ class ApplicationService {
         data['id'] = doc.id;
         return data;
       }).toList();
+    } catch (e) {
+      print("Error fetching applications: $e");
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchUserApplications() async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        throw Exception("No user authenticated.");
+      }
+
+      final querySnapshot = await _firestore
+          .collection('applications')
+          .where('applicantEmail', isEqualTo: currentUser.email)
+          .get();
+
+      return querySnapshot.docs.map((doc) {
+        var data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      print("Error fetching user's applications: $e");
+      return [];
+    }
+  }
+
+
+  Future<List<Map<String, dynamic>>> fetchApplicationsForUser() async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        throw Exception("No user authenticated.");
+      }
+
+      final querySnapshot = await _firestore
+          .collection('applications')
+          .where('offeredBy', isEqualTo: currentUser.email)
+          .get();
+
+      return querySnapshot.docs.map((doc) {
+        var data = doc.data();
+        data['id'] = doc.id;  // add the document id for later deletion
+        return data;
+      }).toList();
+    } catch (e) {
+      print("Error fetching applications: $e");
+      return [];
+    }
+  }
+
+
+  Future<List<Map<String, dynamic>>> fetchJobApplications(String jobId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('applications')
+          .where('jobId', isEqualTo: jobId)
+          .get();
+
+      return snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
     } catch (e) {
       print("Error fetching applications: $e");
       return [];

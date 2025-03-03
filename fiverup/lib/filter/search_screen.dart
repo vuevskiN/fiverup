@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fiverup/match/match_filter.dart';
 import 'package:fiverup/service/profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../application_screen/lapplication_screen.dart';
 import '../job/edit/edit_job.dart';
 import '../models/job.dart';
+import '../models/profile.dart';
 import '../service/application_service.dart';
 import '../service/job_service.dart';
 import '../job/add/add_job.dart';
@@ -378,6 +380,29 @@ class _SearchScreenState extends State<SearchScreen> {
 
           ),
 
+          ElevatedButton(
+              onPressed: () async {
+                final user = FirebaseAuth.instance.currentUser;
+                final email = user?.email;
+                if(email != null){
+                  print("print email not null");
+                  ProfileService profileService = ProfileService();
+
+                  String? profileId = await profileService.getProfileByEmail(email);
+
+                  if(profileId != null){
+                    print("print profileId not null");
+                    Profile? profile = await profileService.getProfileById(profileId);
+
+                    if(profile != null){
+                      print("print profile not null");
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=> JobFilterScreen(profile: profile)));
+                    }
+                  }
+                }
+              },
+              child: Text("Find Matches")),
+
           IconButton(
 
             icon: const Icon(Icons.add, color: Colors.white),
@@ -467,7 +492,7 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Row(
 
               children: [
-
+                
                 Expanded(
 
                   child: TextField(
@@ -1176,25 +1201,11 @@ class _SearchScreenState extends State<SearchScreen> {
 
                   TextButton(
 
-                    child: const Text(
-
-                      'Apply',
-
-                      style: TextStyle(
-
-                        color: Colors.white, // White text on blue background
-
-                        fontWeight: FontWeight.w500,
-
-                      ),
-
-                    ),
-
                     onPressed: () async {
 
                       final applicationService = ApplicationService();
 
-                      await applicationService.applyForJob(job.jobId, job.createdBy!);
+                      await applicationService.applyForJob(job.jobId);
 
 
 
@@ -1222,6 +1233,20 @@ class _SearchScreenState extends State<SearchScreen> {
 
                     ),
 
+                    child: const Text(
+
+                      'Apply',
+
+                      style: TextStyle(
+
+                        color: Colors.white, // White text on blue background
+
+                        fontWeight: FontWeight.w500,
+
+                      ),
+
+                    ),
+
                   ),
 
               ],
@@ -1237,15 +1262,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
 
   }
-
-
-
-
-
-
-
-
-
+  
   Widget _buildPagination() {
 
     return Padding(

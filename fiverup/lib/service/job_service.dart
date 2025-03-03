@@ -18,6 +18,9 @@ class JobService {
         'offering': job.offering,
         'dueDate': job.dueDate,
         'comments': [],
+        'requiredSkills': job.requiredSkills ?? [],
+        'tags': job.tags ?? [],
+        'location': job.location ?? 'Remote',
       });
     }
   }
@@ -30,6 +33,9 @@ class JobService {
       'seeking': updatedJob.seeking,
       'offering': updatedJob.offering,
       'dueDate': updatedJob.dueDate,
+      'requiredSkills': updatedJob.requiredSkills ?? [],
+      'tags': updatedJob.tags ?? [],
+      'location': updatedJob.location ?? 'Remote',
     });
   }
 

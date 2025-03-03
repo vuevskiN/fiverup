@@ -67,7 +67,7 @@ class ProfileService extends ChangeNotifier {
         var profileDoc = profileSnapshot.docs.first;
         var profile = Profile.fromFirestore(profileDoc.id, profileDoc.data() as Map<String, dynamic>);
 
-        return profile.icons['avatarIcon'];
+        return profileDoc.id;
       }
     } catch (e) {
       print("Error fetching profile by email: $e");
@@ -89,6 +89,7 @@ class ProfileService extends ChangeNotifier {
           'imageUrl': updatedProfile.imageUrl,
           'avatarUrl': updatedProfile.avatarUrl,
           'icons': updatedProfile.icons,
+          'skills' : updatedProfile.skills ?? []
         });
         _profile = updatedProfile;
         notifyListeners();
@@ -103,6 +104,7 @@ class ProfileService extends ChangeNotifier {
   Future<void> addProfile({
     required String userId,
     required String email,
+    List<String>? skills,
   }) async {
     try {
       await profilesCollection.doc(userId).set({
@@ -115,6 +117,7 @@ class ProfileService extends ChangeNotifier {
         'imageUrl': '',
         'avatarUrl': '',
         'icons': {},
+        'skills' : skills ?? []
       });
     } catch (e) {
       print("Error adding profile: $e");

@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import '../../models/job.dart';
 import '../../service/job_service.dart';
 
@@ -23,6 +22,9 @@ class _EditJobScreenState extends State<EditJobScreen> {
   late bool _offering;
   late String _createdBy; // The creator's email
   late DateTime? _dueDate;
+  late TextEditingController _locationController;
+  late TextEditingController _requiredSkillsController;
+  late TextEditingController _tagsController;
 
   final JobService jobService = JobService();
 
@@ -36,6 +38,9 @@ class _EditJobScreenState extends State<EditJobScreen> {
     _offering = widget.job.offering;
     _createdBy = widget.job.createdBy ?? _getCurrentUserEmail();
     _dueDate = widget.job.dueDate;
+    _locationController = TextEditingController(text: widget.job.location ?? '');
+    _requiredSkillsController = TextEditingController(text: widget.job.requiredSkills?.join(', ') ?? '');
+    _tagsController = TextEditingController(text: widget.job.tags?.join(', ') ?? '');
   }
 
   @override
@@ -43,6 +48,9 @@ class _EditJobScreenState extends State<EditJobScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _hourlyRateController.dispose();
+    _locationController.dispose();
+    _requiredSkillsController.dispose();
+    _tagsController.dispose();
     super.dispose();
   }
 
@@ -88,6 +96,9 @@ class _EditJobScreenState extends State<EditJobScreen> {
       seeking: _seeking,
       offering: _offering,
       dueDate: _dueDate,
+      location: _locationController.text.trim(),
+      requiredSkills: _requiredSkillsController.text.trim().split(',').map((e) => e.trim()).toList(),
+      tags: _tagsController.text.trim().split(',').map((e) => e.trim()).toList(),
     );
 
     jobService.updateJob(widget.job.jobId, updatedJob).then((_) {
@@ -183,6 +194,12 @@ class _EditJobScreenState extends State<EditJobScreen> {
             _buildTextField('Job Description', _descriptionController),
             const SizedBox(height: 12),
             _buildTextField('Hourly Rate', _hourlyRateController, keyboardType: TextInputType.number),
+            const SizedBox(height: 12),
+            _buildTextField('Location', _locationController),
+            const SizedBox(height: 12),
+            _buildTextField('Required Skills (comma separated)', _requiredSkillsController),
+            const SizedBox(height: 12),
+            _buildTextField('Tags (comma separated)', _tagsController),
             const SizedBox(height: 20),
             _buildSwitchRow('Seeking: ', _seeking, _onSeekingChanged),
             const SizedBox(height: 12),
