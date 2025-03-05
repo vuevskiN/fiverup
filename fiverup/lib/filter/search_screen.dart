@@ -116,6 +116,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
       if (snapshot.docs.isNotEmpty) {
 
+        print("print: "+snapshot.docs.first['icon']);
         return snapshot.docs.first['icon']; // Return the icon name (string)
 
       }
@@ -131,7 +132,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _fetchUserProfileImageUrl(String email) async {
 
     final imageUrl = await profileImgService.getUserProfileImage(email);
-
+    print("image:"+imageUrl!);
     setState(() {
 
       userProfileImageUrl = imageUrl; // Store the image URL
@@ -492,7 +493,7 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Row(
 
               children: [
-                
+
                 Expanded(
 
                   child: TextField(
@@ -701,92 +702,40 @@ class _SearchScreenState extends State<SearchScreen> {
 
             )
 
-                : FutureBuilder<String?>(
+                : FutureBuilder<Profile?>(
+                future: ProfileService().getProfileByEmailProfile(job.createdBy!),
+                builder: (context, snapshot){
+                  if(snapshot.connectionState == ConnectionState.waiting){
+                    return const CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.white,
+                      child: CircularProgressIndicator(),
+                    );
+                  }
 
-              future: ProfileService().getProfileByEmail(job.createdBy!),
+                  if(snapshot.hasError || !snapshot.hasData || snapshot.data == null){
+                    return const CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.person,
+                        color: Colors.black,
+                        size: 30,
+                      ),
+                    );
+                  }
 
-              builder: (context, snapshot) {
-
-                if (snapshot.connectionState == ConnectionState.waiting) {
-
-                  return const CircleAvatar(
-
-                    radius: 30,
-
-                    backgroundColor: Colors.white,
-
-                    child: CircularProgressIndicator(),
-
-                  );
-
-                }
-
-
-
-                if (snapshot.hasError) {
-
-                  return const CircleAvatar(
-
-                    radius: 30,
-
-                    backgroundColor: Colors.white,
-
-                    child: Icon(
-
-                      Icons.person,
-
-                      color: Colors.black,
-
-                      size: 30,
-
-                    ),
-
-                  );
-
-                }
-
-
-
-                if (snapshot.hasData && snapshot.data != null) {
-
-                  String avatarIconName = snapshot.data!;
-
+                  Profile profile = snapshot.data!;
                   return CircleAvatar(
-
                     radius: 30,
-
                     backgroundColor: Colors.white,
                     child: Icon(
-                      _getIconFromName(avatarIconName), // Function to get icon from the name
+                      _getIconFromName(profile.icons['avatarIcon'] ?? 'person'),
                       color: Colors.black,
                       size: 30,
                     ),
                   );
-
-                }
-
-
-
-                return const CircleAvatar(
-
-                  radius: 30,
-
-                  backgroundColor: Colors.white,
-
-                  child: Icon(
-
-                    Icons.person,
-
-                    color: Colors.black,
-
-                    size: 30,
-
-                  ),
-
-                );
-
-              },
-
+                },
             ),
 
             const SizedBox(width: 16),
@@ -888,6 +837,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
 // Right side: "+" icon to show details
                       IconButton(
                         icon: const Icon(
@@ -1018,6 +968,18 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
 
             ),
+            Text(
+                'Location: ${job.location}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500
+                ),
+            ),
+            Text(
+                job.requiredSkills != null && job.requiredSkills!.isNotEmpty
+                ? job.requiredSkills!.join(", ")
+                : "No skills required"),
 
             const SizedBox(height: 8),
 
@@ -1205,7 +1167,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
                       final applicationService = ApplicationService();
 
-                      await applicationService.applyForJob(job.jobId);
+                      await applicationService.applyForJob(job.jobId, job.createdBy!);
 
 
 
@@ -1262,7 +1224,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
 
   }
-  
+
   Widget _buildPagination() {
 
     return Padding(

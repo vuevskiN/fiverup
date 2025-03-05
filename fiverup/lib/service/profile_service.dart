@@ -124,6 +124,21 @@ class ProfileService extends ChangeNotifier {
     }
   }
 
+  Future<Profile?> getProfileByEmailProfile(String email) async {
+    try {
+      var profileSnapshot = await profilesCollection
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (profileSnapshot.docs.isNotEmpty) {
+        var profileDoc = profileSnapshot.docs.first;
+        return Profile.fromFirestore(profileDoc.id, profileDoc.data() as Map<String, dynamic>);
+      }
+    } catch (e) {
+      print("Error fetching profile by email: $e");
+    }
+    return null;
+  }
 
   Future<void> updateProfileIcon(String profileId, String iconName, String iconValue) async {
     try {

@@ -47,6 +47,7 @@ dependencies:
   googleapis_auth: ^1.4.1
   google_sign_in: ^6.1.5
   flutter_email_sender: ^7.0.0
+  string_similarity: ^2.1.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

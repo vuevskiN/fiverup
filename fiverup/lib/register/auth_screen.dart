@@ -7,23 +7,23 @@ class AuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF0D1B2A),
-          title: Center(
-            child: Text(
-              'Fiver Up',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-                fontFamily: 'Roboto',
-              ),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0D1B2A),
+        title: Center(
+          child: Text(
+            'Fiver Up',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+              fontFamily: 'Roboto',
             ),
           ),
         ),
+      ),
 
-        body: SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 480),
           padding: const EdgeInsets.only(bottom: 174),

@@ -11,12 +11,23 @@ class _PromoSectionState extends State<PromoSection> {
 
   void _performSearch() {
     final query = _searchController.text.trim();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SearchScreen(searchQuery: query),
-      ),
-    );
+    if (query.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SearchScreen(searchQuery: query), // Send query to search page
+        ),
+      );
+    }
+
+    else{
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SearchScreen(searchQuery: query.isEmpty ? '' : query),
+        ),
+      );
+    }
   }
 
   @override
@@ -24,7 +35,7 @@ class _PromoSectionState extends State<PromoSection> {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
-          color: const Color(0xCC415A77),
+        color: const Color(0xCC415A77),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), spreadRadius: 2, blurRadius: 8)],
       ),
@@ -79,19 +90,19 @@ class _PromoSectionState extends State<PromoSection> {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search for any service...',
+                      hintText: 'Search for any job...',
                       hintStyle: TextStyle(
-                        fontSize: 14, // Smaller font size for hint text
+                        fontSize: 14,
                         color: Color(0xFF1B263B),
                       ),
                       border: InputBorder.none,
                     ),
-                    onSubmitted: (_) => _performSearch(), // Trigger search on submit
+                    onSubmitted: (_) => _performSearch(), // Search on enter
                   ),
                 ),
                 IconButton(
                   icon: Icon(Icons.search),
-                  onPressed: _performSearch,
+                  onPressed: _performSearch, // Search on button press
                   color: Colors.black,
                 ),
               ],

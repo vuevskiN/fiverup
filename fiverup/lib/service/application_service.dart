@@ -6,7 +6,7 @@ class ApplicationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final NotificationService _notificationService = NotificationService();
 
-  Future<void> applyForJob(String jobId) async {
+  Future<void> applyForJob(String jobId, String appliciantEmail) async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
@@ -16,7 +16,7 @@ class ApplicationService {
       await _firestore.collection('applications').add({
         'jobId': jobId,
         'offeredBy': currentUser.email,
-        'applicantEmail': currentUser.email,
+        'applicantEmail': appliciantEmail,
         'appliedAt': Timestamp.now(),
       });
 
@@ -95,6 +95,7 @@ class ApplicationService {
   Future<List<Map<String, dynamic>>> fetchApplicationsForUser() async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
+      print("current email: ${currentUser}");
       if (currentUser == null) {
         throw Exception("No user authenticated.");
       }

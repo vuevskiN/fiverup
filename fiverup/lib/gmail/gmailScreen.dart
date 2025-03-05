@@ -9,8 +9,8 @@ class EmailScreen extends StatefulWidget {
 class _EmailScreenState extends State<EmailScreen> {
   final GmailService _gmailService = GmailService();
   final TextEditingController _recipientController = TextEditingController();
-  final TextEditingController _subjectController = TextEditingController();
-  final TextEditingController _bodyController = TextEditingController();
+  final TextEditingController _subjectController = TextEditingController(text: "FiverUp Job Acceptance",);
+  final TextEditingController _bodyController = TextEditingController( text: "Congratulations for getting accepted!!", );
 
   String? loggedInUserEmail; // Store logged-in user's email
 
@@ -69,12 +69,28 @@ class _EmailScreenState extends State<EmailScreen> {
             ),
             TextField(
               controller: _subjectController,
-              decoration: InputDecoration(labelText: "Subject"),
+              decoration: InputDecoration(
+                  labelText: "Subject",
+                hintText: "FiverUp Job Acceptance",
+                disabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8)
+                )
+              ),
+              readOnly: true,
             ),
             TextField(
               controller: _bodyController,
-              decoration: InputDecoration(labelText: "Email Body"),
+              decoration: InputDecoration(
+                  labelText: "Email Body",
+                hintText: "Congratulations for getting accepted!!",
+                disabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8)
+                )
+              ),
               maxLines: 5,
+              readOnly: true,
             ),
             SizedBox(height: 20),
             ElevatedButton(

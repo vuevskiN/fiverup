@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../models/profile.dart';
 import '../models/job.dart';
@@ -94,8 +95,9 @@ class _JobFilterScreenState extends State<JobFilterScreen> {
                       onPressed: () async {
 
                         final applicationService = ApplicationService();
+                        final currentUser = FirebaseAuth.instance.currentUser;
 
-                        await applicationService.applyForJob(job.jobId);
+                        await applicationService.applyForJob(job.jobId, job.createdBy as String);
 
 
 

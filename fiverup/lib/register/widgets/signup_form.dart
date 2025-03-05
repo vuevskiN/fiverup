@@ -14,8 +14,8 @@ class SignupForm extends StatefulWidget {
   _SignupFormState createState() => _SignupFormState();
 }
 
-class _SignupFormState extends State<SignupForm> {
-  final _formKey = GlobalKey<FormState>();
+class _SignupFormState extends State {
+  final _formKey = GlobalKey();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -32,7 +32,7 @@ class _SignupFormState extends State<SignupForm> {
     super.dispose();
   }
 
-  Future<void> _registerUser() async {
+  Future _registerUser() async {
     if (_passwordController.text != _confirmPasswordController.text) {
       setState(() {
         _errorMessage = "Passwords do not match.";
@@ -53,15 +53,15 @@ class _SignupFormState extends State<SignupForm> {
 
       final String userId = userCredential.user!.uid;
 
-      // Save user data to Firestore
+// Save user data to Firestore
       await FirebaseFirestore.instance.collection('users').doc(userId).set({
         'email': userCredential.user!.email,
         'userId': userId,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // Optionally add profile creation logic
-      await Provider.of<ProfileService>(context, listen: false).addProfile(
+// Optionally add profile creation logic
+      await Provider.of(context, listen: false).addProfile(
         userId: userId,
         email: userCredential.user!.email!,
       );
@@ -168,7 +168,7 @@ class _SignupFormState extends State<SignupForm> {
                     recognizer: TapGestureRecognizer()
                       ..onTap = () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) =>  FormContainerPage()),
+                          MaterialPageRoute(builder: (context) => FormContainerPage()),
                         );
                       },
                   ),

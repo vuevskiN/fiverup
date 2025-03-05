@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fiverup/gmail/gmailScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../service/application_service.dart';
@@ -184,6 +185,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                         color: Colors.green,
                                       ),
                                     ),
+                                    TextButton(
+                                        onPressed: (){
+                                          Navigator.of(context).push(MaterialPageRoute(builder: (context) => EmailScreen()));
+                                        },
+                                        child: Center(
+                                          child: Text("Send Gmail"),
+                                        )
+                                    )
                                   ],
                                   const SizedBox(height: 8),
                                   Align(

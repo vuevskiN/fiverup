@@ -9,35 +9,35 @@ class WelcomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-
         const SizedBox(height: 50),
-        const Text(
+        Text(
           'Fast, quality assured, and affordable— find or offer the services you need.',
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white, // Changed to white
             fontSize: 20,
             fontWeight: FontWeight.w600,
             fontStyle: FontStyle.italic,
             fontFamily: 'Playfair Display',
-            height: 22/18,
+            height: 22 / 18,
           ),
         ),
         const SizedBox(height: 69),
-        const Text(
+        Text(
           'Join thousands of professionals delivering and finding exceptional services.\nStart connecting with global talent today!',
+          textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white, // Changed to white
             fontSize: 13,
             fontWeight: FontWeight.w400,
             fontFamily: 'Inter',
-            height: 18/10,
+            height: 18 / 10,
           ),
-          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
         ElevatedButton(
           onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>AuthScreen()));
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => AuthScreen()));
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF1B263B),
@@ -54,7 +54,7 @@ class WelcomeContent extends StatelessWidget {
               fontSize: 16,
               fontWeight: FontWeight.w700,
               fontFamily: 'Inter',
-              height: 29/16,
+              height: 29 / 16,
             ),
           ),
         ),
