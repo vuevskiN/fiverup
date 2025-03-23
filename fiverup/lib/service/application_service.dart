@@ -6,7 +6,7 @@ class ApplicationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final NotificationService _notificationService = NotificationService();
 
-  Future<void> applyForJob(String jobId, String appliciantEmail) async {
+  Future<void> applyForJob(String jobId, String appliciantEmail, double price, String title) async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
@@ -15,9 +15,12 @@ class ApplicationService {
 
       await _firestore.collection('applications').add({
         'jobId': jobId,
-        'offeredBy': currentUser.email,
-        'applicantEmail': appliciantEmail,
+        'offeredBy': appliciantEmail,
+        'applicantEmail': currentUser.email,
         'appliedAt': Timestamp.now(),
+        'title': title,
+        'price': price,
+        'status': 'pending'
       });
 
       print("Application submitted successfully.");
@@ -44,7 +47,9 @@ class ApplicationService {
         status: status,
       );
 
-      await deleteApplicationById(applicationId);
+      if (status == 'rejected') {
+        await deleteApplicationById(applicationId);
+      }
     } catch (e) {
       print("Error processing application: $e");
     }
@@ -55,6 +60,7 @@ class ApplicationService {
       final querySnapshot = await _firestore
           .collection('applications')
           .where('jobId', isEqualTo: jobId)
+        .where('status', isEqualTo: 'pending')
           .get();
 
       return querySnapshot.docs.map((doc) {
@@ -77,7 +83,8 @@ class ApplicationService {
 
       final querySnapshot = await _firestore
           .collection('applications')
-          .where('applicantEmail', isEqualTo: currentUser.email)
+          .where('offeredBy', isEqualTo: currentUser.email)
+          .where('status', isEqualTo: 'pending')
           .get();
 
       return querySnapshot.docs.map((doc) {
@@ -103,11 +110,12 @@ class ApplicationService {
       final querySnapshot = await _firestore
           .collection('applications')
           .where('offeredBy', isEqualTo: currentUser.email)
+        //  .where('status', isEqualTo: 'pending')
           .get();
 
       return querySnapshot.docs.map((doc) {
         var data = doc.data();
-        data['id'] = doc.id;  // add the document id for later deletion
+        data['id'] = doc.id;
         return data;
       }).toList();
     } catch (e) {

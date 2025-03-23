@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fiverup/match/match_filter.dart';
+import 'package:fiverup/service/applicationHistory_service.dart';
 import 'package:fiverup/service/profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,6 +12,7 @@ import '../models/profile.dart';
 import '../service/application_service.dart';
 import '../service/job_service.dart';
 import '../job/add/add_job.dart';
+import '../service/notification_service.dart';
 import '../service/profileImg_service.dart';
 
 
@@ -1165,20 +1167,47 @@ class _SearchScreenState extends State<SearchScreen> {
 
                     onPressed: () async {
 
-                      final applicationService = ApplicationService();
+                      if(job.offering) {
+                        final applicationService = ApplicationService();
 
-                      await applicationService.applyForJob(job.jobId, job.createdBy!);
+                        await applicationService.applyForJob(
+                            job.jobId, job.createdBy!, job.hourlyRate,
+                            job.title);
 
 
+                        Navigator.of(context).pop();
 
-                      Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
 
-                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text(
+                              'You have applied for the job.')),
+                        );
+                      }
 
-                        const SnackBar(content: Text('You have applied for the job.')),
+                      if (job.seeking) {
+                        final applicationHistoryService = ApplicationHistoryService();
+                        final notificationService = NotificationService();
+                        final currentUserEmail = FirebaseAuth.instance.currentUser!.email!;
 
-                      );
+                        await applicationHistoryService.logApplicationDecision(
+                          job.createdBy!,
+                          'accepted',
+                          Timestamp.now(),
+                          currentUserEmail,
+                        );
 
+                        await notificationService.sendNotification(
+                          receiverEmail: job.createdBy!,
+                          senderEmail: currentUserEmail,
+                          status: 'accepted',
+                        );
+
+                        Navigator.of(context).pop();
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('You have applied for the job.')),
+                        );
+                      }
                     },
 
                     style: TextButton.styleFrom(

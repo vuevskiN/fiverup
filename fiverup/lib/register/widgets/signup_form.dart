@@ -53,15 +53,15 @@ class _SignupFormState extends State {
 
       final String userId = userCredential.user!.uid;
 
-// Save user data to Firestore
+      // Save user data to Firestore
       await FirebaseFirestore.instance.collection('users').doc(userId).set({
         'email': userCredential.user!.email,
         'userId': userId,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-// Optionally add profile creation logic
-      await Provider.of(context, listen: false).addProfile(
+      // Await the addProfile() call
+      await Provider.of<ProfileService>(context, listen: false).addProfile(
         userId: userId,
         email: userCredential.user!.email!,
       );
@@ -74,13 +74,17 @@ class _SignupFormState extends State {
       setState(() {
         _errorMessage = e.message;
       });
+    } catch (e) {
+      //Catch any other exception
+      setState(() {
+        _errorMessage = e.toString();
+      });
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

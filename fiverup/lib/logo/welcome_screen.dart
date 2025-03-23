@@ -19,7 +19,14 @@ class WelcomeScreen extends StatelessWidget {
             fontWeight: FontWeight.w700, // Bold font weight
             fontStyle: FontStyle.normal, // Use normal font style
             fontFamily: 'Roboto', // Modern font
-            letterSpacing: 1.2, // Add letter spacing for emphasis
+            letterSpacing: 1.2,
+            shadows: [
+              Shadow(
+                color: Colors.black.withOpacity(0.3),
+                offset: Offset(2, 2),
+                blurRadius: 4,
+              )
+            ],// Add letter spacing for emphasis
           ),
         ),
         centerTitle: true, // Center the title

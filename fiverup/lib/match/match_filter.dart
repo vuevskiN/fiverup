@@ -1,9 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../models/profile.dart';
 import '../models/job.dart';
+import '../service/applicationHistory_service.dart';
 import '../service/application_service.dart';
 import '../service/job_service.dart';
+import '../service/notification_service.dart';
 
 class JobFilterScreen extends StatefulWidget {
   final Profile profile;
@@ -94,11 +97,35 @@ class _JobFilterScreenState extends State<JobFilterScreen> {
                       icon: const Icon(Icons.chevron_right),
                       onPressed: () async {
 
+                      if (job.seeking) {
+                        final applicationHistoryService = ApplicationHistoryService();
+                        final notificationService = NotificationService();
+                        final currentUserEmail = FirebaseAuth.instance
+                            .currentUser!.email!;
+
+                        await applicationHistoryService.logApplicationDecision(
+                          job.createdBy!,
+                          'accepted',
+                          Timestamp.now(),
+                          currentUserEmail,
+                        );
+
+                        await notificationService.sendNotification(
+                          receiverEmail: job.createdBy!,
+                          senderEmail: currentUserEmail,
+                          status: 'accepted',
+                        );
+                      }
+
+                       if(job.offering) {
                         final applicationService = ApplicationService();
                         final currentUser = FirebaseAuth.instance.currentUser;
 
-                        await applicationService.applyForJob(job.jobId, job.createdBy as String);
-
+                        await applicationService.applyForJob(
+                            job.jobId, job.createdBy as String,
+                            job.hourlyRate,
+                            job.title);
+                      }
 
 
                         Navigator.of(context).pop();
