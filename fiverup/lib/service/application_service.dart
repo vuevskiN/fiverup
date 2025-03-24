@@ -6,7 +6,7 @@ class ApplicationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final NotificationService _notificationService = NotificationService();
 
-  Future<void> applyForJob(String jobId, String appliciantEmail, double price, String title) async {
+  Future<void> applyForJob(String jobId, String appliciantEmail, double price, String title, String status) async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
@@ -20,7 +20,7 @@ class ApplicationService {
         'appliedAt': Timestamp.now(),
         'title': title,
         'price': price,
-        'status': 'pending'
+        'status': status
       });
 
       print("Application submitted successfully.");
@@ -47,9 +47,10 @@ class ApplicationService {
         status: status,
       );
 
-      if (status == 'rejected') {
-        await deleteApplicationById(applicationId);
-      }
+      await _firestore.collection('applications').doc(applicationId).update({
+        'status': status,
+      });
+
     } catch (e) {
       print("Error processing application: $e");
     }

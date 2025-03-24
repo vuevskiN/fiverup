@@ -124,7 +124,9 @@ class _JobFilterScreenState extends State<JobFilterScreen> {
                         await applicationService.applyForJob(
                             job.jobId, job.createdBy as String,
                             job.hourlyRate,
-                            job.title);
+                            job.title,
+                          'pending'
+                        );
                       }
 
 

@@ -1172,7 +1172,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
                         await applicationService.applyForJob(
                             job.jobId, job.createdBy!, job.hourlyRate,
-                            job.title);
+                            job.title,
+                            'pending'
+                        );
 
 
                         Navigator.of(context).pop();
@@ -1188,12 +1190,21 @@ class _SearchScreenState extends State<SearchScreen> {
                         final applicationHistoryService = ApplicationHistoryService();
                         final notificationService = NotificationService();
                         final currentUserEmail = FirebaseAuth.instance.currentUser!.email!;
+                        final applicationService = ApplicationService();
 
                         await applicationHistoryService.logApplicationDecision(
                           job.createdBy!,
                           'accepted',
                           Timestamp.now(),
                           currentUserEmail,
+                        );
+
+                        await applicationService.applyForJob(
+                            job.jobId,
+                            currentUserEmail,
+                            job.hourlyRate,
+                            job.title,
+                            'accepted'
                         );
 
                         await notificationService.sendNotification(
